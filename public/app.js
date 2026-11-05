@@ -118,16 +118,62 @@ function stopRecording() {
 }
 
 // ----------------------------------------------------
-// 3. Daily Vocabulary Management
+// 3. Daily Vocabulary Management & Progress Tracking
 // ----------------------------------------------------
 let currentVocabList = [];
+let learnedVocabMap = new Map(); // lowercase term -> object
+let interviewHistoryList = [];
+
+async function loadProgressData() {
+  try {
+    const res = await fetch('/api/progress?t=' + Date.now());
+    const json = await res.json();
+    if (json.success && json.data) {
+      learnedVocabMap.clear();
+      (json.data.learnedVocab || []).forEach(item => {
+        learnedVocabMap.set(item.term.toLowerCase(), item);
+      });
+      interviewHistoryList = json.data.interviewHistory || [];
+      updateProgressUI();
+    }
+  } catch (e) {
+    console.error('Error loading progress:', e);
+  }
+}
+
+function updateProgressUI() {
+  const badge = document.getElementById('badge-learned-count');
+  if (badge) badge.innerText = learnedVocabMap.size;
+
+  const statVocab = document.getElementById('stat-vocab-count');
+  if (statVocab) statVocab.innerText = learnedVocabMap.size;
+
+  const statInt = document.getElementById('stat-interview-count');
+  if (statInt) statInt.innerText = interviewHistoryList.length;
+
+  const statAvg = document.getElementById('stat-avg-score');
+  if (statAvg) {
+    if (interviewHistoryList.length > 0) {
+      const avg = (interviewHistoryList.reduce((acc, cur) => acc + (cur.score || 0), 0) / interviewHistoryList.length).toFixed(1);
+      statAvg.innerText = `${avg}/10`;
+    } else {
+      statAvg.innerText = '--/10';
+    }
+  }
+
+  renderLearnedVocab();
+  renderInterviewHistory();
+  if (currentVocabList && currentVocabList.length > 0) {
+    renderVocabCards(currentVocabList);
+  }
+}
 
 async function loadDefaultVocab() {
   const grid = document.getElementById('vocab-grid');
   grid.innerHTML = `<div class="col-span-full py-10 text-center text-slate-400"><i class="fa-solid fa-spinner fa-spin text-xl text-indigo-400"></i> Đang tải từ vựng...</div>`;
 
   try {
-    const res = await fetch('/api/vocab/defaults');
+    const res = await fetch('/api/vocab/defaults?t=' + Date.now());
     const data = await res.json();
     if (data.success) {
       currentVocabList = data.data;
@@ -145,16 +191,24 @@ function renderVocabCards(list) {
     return;
   }
 
-  grid.innerHTML = list.map((item, idx) => `
-    <div class="bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 transition-all duration-200 flex flex-col justify-between group shadow-sm hover:shadow-lg">
+  grid.innerHTML = list.map((item) => {
+    const isLearned = learnedVocabMap.has(item.term.toLowerCase());
+    return `
+    <div class="bg-slate-900/60 hover:bg-slate-900/90 border ${isLearned ? 'border-emerald-500/50 bg-emerald-950/10' : 'border-slate-800'} hover:border-indigo-500/40 rounded-2xl p-5 transition-all duration-200 flex flex-col justify-between group shadow-sm hover:shadow-lg">
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
             ${item.category || 'DevOps'}
           </span>
-          <button onclick="speakText('${item.term.replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="Nghe phát âm">
-            <i class="fa-solid fa-volume-high text-xs"></i>
-          </button>
+          <div class="flex items-center space-x-1.5">
+            <button onclick="toggleLearnedVocab('${item.term.replace(/'/g, "\\'")}', '${(item.category||'').replace(/'/g, "\\'")}', '${(item.ipa||'').replace(/'/g, "\\'")}', '${(item.viMeaning||'').replace(/'/g, "\\'")}', '${(item.definition||'').replace(/'/g, "\\'")}', '${(item.example||'').replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${isLearned ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-emerald-300'}" title="${isLearned ? 'Bấm để bỏ đánh dấu' : 'Bấm để đánh dấu đã thuộc từ này'}">
+              <i class="fa-solid fa-check"></i>
+              <span>${isLearned ? 'Đã học' : 'Học từ này'}</span>
+            </button>
+            <button onclick="speakText('${item.term.replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="Nghe phát âm">
+              <i class="fa-solid fa-volume-high text-xs"></i>
+            </button>
+          </div>
         </div>
 
         <div>
@@ -181,7 +235,157 @@ function renderVocabCards(list) {
         </button>
       </div>
     </div>
+  `;
+  }).join('');
+}
+
+async function toggleLearnedVocab(term, category, ipa, viMeaning, definition, example) {
+  try {
+    const res = await fetch('/api/progress/vocab/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ term, category, ipa, viMeaning, definition, example })
+    });
+    const json = await res.json();
+    if (json.success) {
+      if (json.isLearned) {
+        learnedVocabMap.set(term.toLowerCase(), { term, category, ipa, viMeaning, definition, example });
+      } else {
+        learnedVocabMap.delete(term.toLowerCase());
+      }
+      updateProgressUI();
+    }
+  } catch (e) {
+    console.error('Error toggling vocab:', e);
+  }
+}
+
+async function deleteLearnedVocab(term) {
+  try {
+    const res = await fetch(`/api/progress/vocab/${encodeURIComponent(term)}`, { method: 'DELETE' });
+    const json = await res.json();
+    if (json.success) {
+      learnedVocabMap.delete(term.toLowerCase());
+      updateProgressUI();
+    }
+  } catch (e) {
+    console.error('Error deleting learned word:', e);
+  }
+}
+
+function renderLearnedVocab() {
+  const container = document.getElementById('learned-vocab-container');
+  if (!container) return;
+
+  if (learnedVocabMap.size === 0) {
+    container.innerHTML = `
+      <div class="col-span-full py-10 text-center text-slate-400 bg-slate-950/40 rounded-xl border border-slate-800">
+        <i class="fa-solid fa-book-open-reader text-2xl text-slate-500 mb-2"></i>
+        <p class="text-xs">Bạn chưa đánh dấu từ vựng nào. Hãy sang tab "Từ Vựng Mỗi Ngày" và bấm "Học từ này"!</p>
+      </div>
+    `;
+    return;
+  }
+
+  const list = Array.from(learnedVocabMap.values());
+  container.innerHTML = list.map(item => `
+    <div class="bg-slate-950/80 border border-emerald-500/30 rounded-xl p-4 flex flex-col justify-between space-y-2">
+      <div>
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">
+            ${item.category || 'DevOps'}
+          </span>
+          <div class="flex items-center space-x-1">
+            <button onclick="speakText('${item.term.replace(/'/g, "\\'")}')" class="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white" title="Nghe">
+              <i class="fa-solid fa-volume-high text-xs"></i>
+            </button>
+            <button onclick="deleteLearnedVocab('${item.term.replace(/'/g, "\\'")}')" class="p-1.5 rounded hover:bg-rose-500/20 text-slate-500 hover:text-rose-400" title="Xóa khỏi kho đã học">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
+        </div>
+        <h4 class="text-base font-bold text-white mt-1">${item.term}</h4>
+        <p class="text-xs text-emerald-300 font-medium">${item.viMeaning || ''}</p>
+        <p class="text-[11px] text-slate-400 mt-1 line-clamp-2">${item.definition || ''}</p>
+      </div>
+      <div class="pt-2 border-t border-slate-800/80 text-[10px] text-slate-500 italic">
+        "${item.example || ''}"
+      </div>
+    </div>
   `).join('');
+}
+
+function renderInterviewHistory() {
+  const container = document.getElementById('interview-history-container');
+  if (!container) return;
+
+  if (interviewHistoryList.length === 0) {
+    container.innerHTML = `
+      <div class="py-10 text-center text-slate-400 bg-slate-950/40 rounded-xl border border-slate-800">
+        <i class="fa-solid fa-microphone text-2xl text-slate-500 mb-2"></i>
+        <p class="text-xs">Chưa có bài phỏng vấn nào được lưu. Hãy sang tab "Luyện Phỏng Vấn AI" để trả lời câu hỏi và nhận chấm điểm!</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = interviewHistoryList.map(item => {
+    const scoreColor = item.score >= 8 ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : (item.score >= 6 ? 'text-amber-400 border-amber-500/30 bg-amber-500/10' : 'text-rose-400 border-rose-500/30 bg-rose-500/10');
+    return `
+      <div class="bg-slate-950/80 border border-slate-800 hover:border-slate-700 rounded-xl p-5 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
+          <div>
+            <span class="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">${item.topic || 'DevOps Interview'}</span>
+            <p class="text-sm font-bold text-white mt-0.5">"${item.question}"</p>
+          </div>
+          <div class="flex items-center space-x-3 shrink-0">
+            <div class="px-3 py-1 rounded-xl border ${scoreColor} text-center">
+              <span class="text-lg font-black">${item.score}</span><span class="text-[10px] text-slate-400">/10</span>
+            </div>
+            <button onclick="deleteInterviewHistory('${item.id}')" class="p-2 rounded-lg hover:bg-rose-500/20 text-slate-500 hover:text-rose-400" title="Xóa bài này">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-[11px] uppercase font-bold text-slate-400">Câu trả lời của bạn:</p>
+          <p class="text-xs text-slate-200 bg-slate-900 p-2.5 rounded-lg border border-slate-800/80 font-mono mt-1">
+            ${item.answer}
+          </p>
+        </div>
+
+        <div class="text-xs text-slate-300">
+          <span class="text-emerald-400 font-semibold">Nhận xét AI:</span> ${item.summary_vi || ''}
+        </div>
+
+        ${item.model_answer_en ? `
+          <div class="p-3 bg-indigo-950/20 border border-indigo-500/20 rounded-lg">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[11px] font-bold text-indigo-300 uppercase">Câu trả lời mẫu chuẩn:</span>
+              <button onclick="speakText('${item.model_answer_en.replace(/'/g, "\\'")}')" class="text-[10px] text-indigo-400 hover:text-indigo-200 flex items-center gap-1">
+                <i class="fa-solid fa-volume-high"></i> Nghe
+              </button>
+            </div>
+            <p class="text-xs text-slate-200 font-mono italic">"${item.model_answer_en}"</p>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+async function deleteInterviewHistory(id) {
+  try {
+    const res = await fetch(`/api/progress/interview/${id}`, { method: 'DELETE' });
+    const json = await res.json();
+    if (json.success) {
+      interviewHistoryList = interviewHistoryList.filter(h => h.id !== id);
+      updateProgressUI();
+    }
+  } catch (e) {
+    console.error('Error deleting interview session:', e);
+  }
 }
 
 async function generateAIVocab() {
@@ -405,9 +609,14 @@ async function requestNewQuestion() {
         guideBox.classList.add('hidden');
       }
 
-      // Clear previous evaluation
+      // Clear previous evaluation and hints
       document.getElementById('evaluation-result').classList.add('hidden');
       document.getElementById('candidate-answer').value = '';
+      const hintBox = document.getElementById('question-hint-box');
+      if (hintBox) {
+        hintBox.classList.add('hidden');
+        hintBox.innerHTML = '';
+      }
 
       // Auto pronounce new question
       speakText(data.data.question);
@@ -420,6 +629,107 @@ async function requestNewQuestion() {
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalHtml;
+  }
+}
+
+// ----------------------------------------------------
+// Gen Câu Gợi Ý & Dàn Ý Trả Lời (AI Hint Generator)
+// ----------------------------------------------------
+async function requestQuestionHint() {
+  const btn = document.getElementById('btn-question-hint');
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang gen gợi ý...</span>`;
+
+  const hintBox = document.getElementById('question-hint-box');
+  hintBox.classList.remove('hidden');
+  hintBox.innerHTML = `
+    <div class="py-4 text-center text-amber-300 text-xs flex items-center justify-center gap-2">
+      <i class="fa-solid fa-brain fa-bounce text-sm"></i>
+      <span>9Router AI đang soạn dàn ý & mẫu câu trả lời chuẩn...</span>
+    </div>
+  `;
+
+  try {
+    const res = await fetch('/api/interview/hint?t=' + Date.now(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question: currentInterviewQuestion,
+        topic: document.getElementById('interview-topic').value
+      })
+    });
+    const data = await res.json();
+    if (data.success && data.data) {
+      const h = data.data;
+      hintBox.innerHTML = `
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-amber-500/20 pb-2">
+            <span class="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
+              <i class="fa-solid fa-lightbulb"></i> Gợi ý trả lời & Dàn ý chuyên môn
+            </span>
+            <button onclick="document.getElementById('question-hint-box').classList.add('hidden')" class="text-xs text-slate-400 hover:text-white px-2 py-0.5 rounded hover:bg-slate-800">
+              <i class="fa-solid fa-xmark"></i> Đóng
+            </button>
+          </div>
+
+          <!-- Keywords -->
+          <div>
+            <p class="text-[11px] font-bold text-amber-300 uppercase tracking-wider mb-1.5">Từ khóa chuyên môn nên nói:</p>
+            <div class="flex flex-wrap gap-1.5">
+              ${(h.key_keywords || []).map(kw => `<span class="px-2.5 py-0.5 rounded-md text-xs bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono font-medium">${kw}</span>`).join('')}
+            </div>
+          </div>
+
+          <!-- Steps outline -->
+          <div>
+            <p class="text-[11px] font-bold text-amber-300 uppercase tracking-wider mb-1">Dàn ý trả lời 3 bước:</p>
+            <ul class="text-xs text-slate-200 space-y-1 list-disc pl-4">
+              ${(h.outline_steps || []).map(step => `<li>${step}</li>`).join('')}
+            </ul>
+          </div>
+
+          <!-- Starter Template -->
+          <div class="p-3 bg-slate-900/90 rounded-xl border border-amber-500/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-bullhorn"></i> Mẫu câu trả lời gợi ý (Starter Template):
+              </span>
+              <button onclick="speakText('${h.starter_template_en.replace(/'/g, "\\'")}')" class="text-[11px] text-indigo-400 hover:text-indigo-200 flex items-center gap-1">
+                <i class="fa-solid fa-volume-high"></i> Nghe đọc mẫu
+              </button>
+            </div>
+            <p class="text-xs text-slate-100 font-['JetBrains_Mono'] italic bg-slate-950/70 p-2 rounded border border-slate-800">
+              "${h.starter_template_en}"
+            </p>
+            <p class="text-xs text-slate-400 italic">👉 <b>Dịch nghĩa:</b> ${h.starter_template_vi}</p>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-1">
+            <button onclick="insertTemplateToAnswer('${h.starter_template_en.replace(/'/g, "\\'")}')" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1.5 shadow-md active:scale-95 transition-all">
+              <i class="fa-solid fa-arrow-down"></i> Chèn vào ô trả lời để luyện nói
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      hintBox.innerHTML = `<div class="text-xs text-rose-400">Không thể tạo gợi ý lúc này. Vui lòng thử lại.</div>`;
+    }
+  } catch (err) {
+    console.error(err);
+    hintBox.innerHTML = `<div class="text-xs text-rose-400">Lỗi kết nối khi tạo gợi ý.</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
+}
+
+function insertTemplateToAnswer(text) {
+  const textarea = document.getElementById('candidate-answer');
+  if (textarea) {
+    textarea.value = text;
+    textarea.focus();
+    alert('Đã chèn khung câu gợi ý vào ô trả lời! Bạn có thể chỉnh sửa hoặc bấm Mic để luyện nói theo.');
   }
 }
 
@@ -456,6 +766,7 @@ async function submitAnswerForEvaluation() {
     const data = await res.json();
     if (data.success && data.data) {
       renderEvaluationResult(data.data);
+      loadProgressData();
     } else {
       evalContainer.innerHTML = `<div class="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-xl">Lỗi chấm điểm: ${data.error || 'Vui lòng thử lại.'}</div>`;
     }
@@ -632,6 +943,7 @@ function clearChatHistory() {
 // Initialization
 // ----------------------------------------------------
 window.addEventListener('DOMContentLoaded', () => {
+  loadProgressData();
   loadDefaultVocab();
   renderPhrases('all');
 });

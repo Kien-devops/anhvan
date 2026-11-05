@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,9 +10,44 @@ const ROUTER_URL = process.env.ROUTER_URL || 'https://9router.onprem.site/v1';
 const ROUTER_KEY = process.env.ROUTER_KEY || 'sk-a7e6ec7fa26ceade-ii35lw-eb70a6ee';
 const ROUTER_MODEL = process.env.ROUTER_MODEL || 'gpt-5.6-sol';
 
+// Persistent storage directory on server-tang4 (hostPath mounted to /app/data)
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+const DB_FILE = path.join(DATA_DIR, 'progress.json');
+
+function readProgress() {
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      const content = fs.readFileSync(DB_FILE, 'utf-8');
+      return JSON.parse(content);
+    }
+  } catch (err) {
+    console.error('Error reading progress file:', err);
+  }
+  return { learnedVocab: [], interviewHistory: [] };
+}
+
+function saveProgress(data) {
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error saving progress file:', err);
+  }
+}
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Strict no-cache headers for static files to prevent browser caching stale scripts
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+}));
 
 // Helper to call 9Router LLM API
 async function callLLM(messages, temperature = 0.7) {
@@ -244,10 +280,57 @@ Return ONLY a valid JSON object with NO markdown backticks:
   }
 });
 
-// 3. Mock Interview Evaluation
+// 3. Mock Interview Question Hint Generation
+app.post('/api/interview/hint', async (req, res) => {
+  try {
+    const { question, topic = 'DevOps' } = req.body;
+    if (!question) {
+      return res.status(400).json({ success: false, error: "Question is required" });
+    }
+
+    const prompt = `You are a Senior DevOps Interview Coach helping an internship candidate formulate a strong answer in English.
+Question: "${question}"
+Topic: "${topic}"
+
+Provide:
+1. Three high-impact technical keywords or tools to mention.
+2. A clear 3-step speaking outline.
+3. A natural, professional starter template that the candidate can use to begin their answer.
+
+Return ONLY a valid JSON object with NO markdown backticks:
+{
+  "key_keywords": ["keyword 1", "keyword 2", "keyword 3"],
+  "outline_steps": [
+    "Step 1: Explain the problem/context...",
+    "Step 2: Propose the technical solution...",
+    "Step 3: Measure results or communicate to team..."
+  ],
+  "starter_template_en": "To approach this situation, I would first... Then, I would... Finally, to verify the result, I would...",
+  "starter_template_vi": "Bản dịch nghĩa tiếng Việt của khung câu trả lời mẫu."
+}`;
+
+    const raw = await callLLM([
+      { role: "system", content: "You output only clean raw JSON objects." },
+      { role: "user", content: prompt }
+    ], 0.7);
+
+    let clean = raw.trim();
+    if (clean.startsWith('```json')) clean = clean.slice(7);
+    if (clean.startsWith('```')) clean = clean.slice(3);
+    if (clean.endsWith('```')) clean = clean.slice(0, -3);
+
+    const parsed = JSON.parse(clean.trim());
+    res.json({ success: true, data: parsed });
+  } catch (error) {
+    console.error('Error generating interview hint:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 4. Mock Interview Evaluation
 app.post('/api/interview/evaluate', async (req, res) => {
   try {
-    const { question, answer } = req.body;
+    const { question, answer, topic = 'DevOps' } = req.body;
     if (!answer || answer.trim().length === 0) {
       return res.status(400).json({ success: false, error: "Answer cannot be empty" });
     }
@@ -282,10 +365,111 @@ Return ONLY a valid JSON object with NO markdown backticks:
     if (clean.endsWith('```')) clean = clean.slice(0, -3);
 
     const parsed = JSON.parse(clean.trim());
+
+    // Automatically persist interview practice to persistent database on server-tang4
+    try {
+      const progress = readProgress();
+      if (!Array.isArray(progress.interviewHistory)) progress.interviewHistory = [];
+      const historyItem = {
+        id: 'int_' + Date.now(),
+        question: question,
+        topic: topic,
+        answer: answer,
+        score: parsed.score || 7,
+        summary_vi: parsed.summary_vi || '',
+        strengths_en: parsed.strengths_en || '',
+        improvements: parsed.improvements || {},
+        model_answer_en: parsed.model_answer_en || '',
+        model_answer_vi: parsed.model_answer_vi || '',
+        practicedAt: new Date().toISOString()
+      };
+      progress.interviewHistory.unshift(historyItem);
+      // Keep recent 50 sessions
+      if (progress.interviewHistory.length > 50) {
+        progress.interviewHistory = progress.interviewHistory.slice(0, 50);
+      }
+      saveProgress(progress);
+    } catch (saveErr) {
+      console.error('Failed to auto-save interview progress:', saveErr);
+    }
+
     res.json({ success: true, data: parsed });
   } catch (error) {
     console.error('Error evaluating interview:', error);
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 5. Persistent Progress Endpoints (server-tang4 storage)
+app.get('/api/progress', (req, res) => {
+  const data = readProgress();
+  res.json({ success: true, data: data });
+});
+
+app.post('/api/progress/vocab/toggle', (req, res) => {
+  try {
+    const item = req.body;
+    if (!item || !item.term) {
+      return res.status(400).json({ success: false, error: "Term is required" });
+    }
+
+    const progress = readProgress();
+    if (!Array.isArray(progress.learnedVocab)) progress.learnedVocab = [];
+
+    const existingIndex = progress.learnedVocab.findIndex(v => v.term.toLowerCase() === item.term.toLowerCase());
+    let isLearned = false;
+
+    if (existingIndex >= 0) {
+      // Unmark as learned
+      progress.learnedVocab.splice(existingIndex, 1);
+      isLearned = false;
+    } else {
+      // Mark as learned
+      progress.learnedVocab.unshift({
+        term: item.term,
+        category: item.category || 'DevOps',
+        ipa: item.ipa || '',
+        viMeaning: item.viMeaning || '',
+        definition: item.definition || '',
+        example: item.example || '',
+        learnedAt: new Date().toISOString()
+      });
+      isLearned = true;
+    }
+
+    saveProgress(progress);
+    res.json({ success: true, isLearned: isLearned, totalLearned: progress.learnedVocab.length, data: progress.learnedVocab });
+  } catch (err) {
+    console.error('Error toggling vocab progress:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/progress/vocab/:term', (req, res) => {
+  try {
+    const term = decodeURIComponent(req.params.term);
+    const progress = readProgress();
+    if (Array.isArray(progress.learnedVocab)) {
+      progress.learnedVocab = progress.learnedVocab.filter(v => v.term.toLowerCase() !== term.toLowerCase());
+      saveProgress(progress);
+    }
+    res.json({ success: true, data: progress.learnedVocab });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/progress/interview/:id', (req, res) => {
+  try {
+    const id = req.params.id;
+    const progress = readProgress();
+    if (Array.isArray(progress.interviewHistory)) {
+      progress.interviewHistory = progress.interviewHistory.filter(h => h.id !== id);
+      saveProgress(progress);
+    }
+    res.json({ success: true, data: progress.interviewHistory });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

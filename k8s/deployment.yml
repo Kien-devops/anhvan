@@ -21,6 +21,8 @@ spec:
       labels:
         app: anhvan
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: server-tang4
       imagePullSecrets:
         - name: ghcr-secret
       containers:
@@ -41,6 +43,11 @@ spec:
               value: "gpt-5.6-sol"
             - name: NODE_ENV
               value: "production"
+            - name: DATA_DIR
+              value: "/app/data"
+          volumeMounts:
+            - name: data-volume
+              mountPath: /app/data
           resources:
             requests:
               cpu: 50m
@@ -64,3 +71,8 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 2
             failureThreshold: 2
+      volumes:
+        - name: data-volume
+          hostPath:
+            path: /opt/anhvan-data
+            type: DirectoryOrCreate

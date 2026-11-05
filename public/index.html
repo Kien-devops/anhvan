@@ -10,7 +10,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2.2.0">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-['Plus_Jakarta_Sans'] antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -59,6 +59,11 @@
       <button onclick="switchTab('interview')" id="tab-interview" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center space-x-2 transition-all">
         <i class="fa-solid fa-microphone-lines"></i>
         <span>Luyện Phỏng Vấn AI (Mock)</span>
+      </button>
+      <button onclick="switchTab('progress')" id="tab-progress" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center space-x-2 transition-all">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span>Kho Đã Học & Tiến Độ</span>
+        <span id="badge-learned-count" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 font-bold ml-1">0</span>
       </button>
       <button onclick="switchTab('chat')" id="tab-chat" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center space-x-2 transition-all">
         <i class="fa-solid fa-robot"></i>
@@ -183,10 +188,16 @@
             <span id="q-topic-badge" class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Kubernetes</span>
             <span id="q-difficulty-badge" class="px-2 py-0.5 rounded text-[11px] bg-slate-800 text-slate-400">Medium</span>
           </div>
-          <button onclick="speakText(document.getElementById('interview-question-text').innerText)" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-2 transition-colors" title="Nghe phát âm câu hỏi">
-            <i class="fa-solid fa-volume-high text-indigo-400"></i>
-            <span>Nghe câu hỏi</span>
-          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="requestQuestionHint()" id="btn-question-hint" class="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-1.5 transition-colors font-medium" title="AI Gợi ý dàn ý và câu trả lời mẫu">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>💡 Gen câu gợi ý</span>
+            </button>
+            <button onclick="speakText(document.getElementById('interview-question-text').innerText)" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-2 transition-colors" title="Nghe phát âm câu hỏi">
+              <i class="fa-solid fa-volume-high text-indigo-400"></i>
+              <span>Nghe câu hỏi</span>
+            </button>
+          </div>
         </div>
 
         <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
@@ -195,6 +206,9 @@
           </p>
           <div id="interview-guidance" class="mt-3 text-xs text-indigo-300 bg-indigo-500/10 p-2.5 rounded-lg border border-indigo-500/20">
             <i class="fa-solid fa-lightbulb mr-1"></i> <b>Gợi ý trả lời:</b> Nêu rõ Pod là đơn vị nhỏ nhất chứa container, còn Deployment quản lý replica, rolling update và self-healing.
+          </div>
+          <!-- Question Hint Container -->
+          <div id="question-hint-box" class="hidden mt-3 p-4 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-3">
           </div>
         </div>
 
@@ -230,6 +244,78 @@
       <!-- Evaluation Result Container -->
       <div id="evaluation-result" class="hidden space-y-4">
         <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- 5. TAB: PROGRESS & LEARNED REPOSITORY -->
+    <section id="view-progress" class="tab-content hidden space-y-6">
+      <div class="bg-gradient-to-r from-slate-900 via-emerald-950/30 to-slate-900 p-6 rounded-2xl border border-emerald-500/20 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span class="inline-block px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-2">
+              Persistent Storage &bull; server-tang4 (/opt/anhvan-data)
+            </span>
+            <h2 class="text-2xl font-black text-white">Kho Đã Học & Tiến Độ Luyện Tập</h2>
+            <p class="text-sm text-slate-300 mt-1">Lưu trữ toàn bộ từ vựng bạn đã thuộc và lịch sử các câu hỏi phỏng vấn đã được AI chấm điểm.</p>
+          </div>
+          <button onclick="loadProgressData()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-colors">
+            <i class="fa-solid fa-rotate"></i> Làm mới dữ liệu
+          </button>
+        </div>
+
+        <!-- Progress Metrics -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+          <div class="bg-slate-950/70 border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+            <div>
+              <p class="text-xs text-slate-400 font-medium">Từ vựng đã thuộc</p>
+              <h3 id="stat-vocab-count" class="text-2xl font-black text-emerald-400 mt-1">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-book-bookmark"></i>
+            </div>
+          </div>
+          <div class="bg-slate-950/70 border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+            <div>
+              <p class="text-xs text-slate-400 font-medium">Bài phỏng vấn đã luyện</p>
+              <h3 id="stat-interview-count" class="text-2xl font-black text-indigo-400 mt-1">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-microphone-lines"></i>
+            </div>
+          </div>
+          <div class="bg-slate-950/70 border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+            <div>
+              <p class="text-xs text-slate-400 font-medium">Điểm TB Phỏng vấn</p>
+              <h3 id="stat-avg-score" class="text-2xl font-black text-amber-400 mt-1">--/10</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-star"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Learned Vocab Section -->
+      <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-800 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i> Danh Sách Từ Vựng Đã Thuộc
+          </h3>
+          <span class="text-xs text-slate-400">Bấm nút "Đã học" tại tab Từ Vựng để thêm/bớt</span>
+        </div>
+        <div id="learned-vocab-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Practiced Interview History Section -->
+      <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-800 space-y-4">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> Lịch Sử Các Câu Phỏng Vấn Đã Chấm Điểm
+        </h3>
+        <div id="interview-history-container" class="space-y-4">
+          <!-- Rendered dynamically -->
+        </div>
       </div>
     </section>
 
@@ -283,7 +369,7 @@
     </div>
   </footer>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2.2.0"></script>
 </body>
 </html>
 
