@@ -6,66 +6,81 @@
   <title>DevOps & Cloud English Hub | Luyện Giao Tiếp & Phỏng Vấn AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=2.5.0">
+  <link rel="stylesheet" href="style.css?v=3.0.0">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-['Plus_Jakarta_Sans'] antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-[#f3f6fa] text-[#151515] min-h-screen flex flex-col font-['Plus_Jakarta_Sans'] antialiased selection:bg-[#f4d77c] selection:text-[#151515]">
 
   <!-- Top Navigation Bar -->
-  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-xl sticky top-0 z-50">
+  <header class="border-b-2 border-[#151515] bg-white sticky top-0 z-50 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-          <i class="fa-solid fa-cloud-bolt text-white text-lg"></i>
+        <div class="w-10 h-10 rounded-xl bg-[#5294ff] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] flex items-center justify-center text-white text-lg">
+          <i class="fa-solid fa-cloud-bolt"></i>
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+            <span class="font-black text-lg tracking-tight text-[#151515]">
               DevOps Cloud English
             </span>
-            <span class="px-2 py-0.5 text-xs rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-medium">Intern Prep</span>
+            <span class="px-2 py-0.5 text-xs rounded-lg bg-[#f4d77c] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] font-black uppercase">PRO</span>
           </div>
-          <p class="text-[11px] text-slate-400">Luyện tiếng Anh giao tiếp & phỏng vấn Cloud/DevOps với AI</p>
+          <p class="text-[11px] font-semibold text-slate-600">Luyện tiếng Anh giao tiếp & phỏng vấn Cloud/DevOps với AI</p>
         </div>
       </div>
 
       <!-- Quick Status -->
-      <div class="flex items-center space-x-4">
-        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <div class="flex items-center space-x-3">
+        <div class="hidden sm:flex items-center space-x-2 px-3 py-1 rounded-full bg-[#4ade80] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] text-xs font-bold">
+          <span class="w-2 h-2 rounded-full bg-[#151515] animate-ping"></span>
           <span>9Router AI Online</span>
         </div>
-        <a href="https://github.com/Kien-devops/anhvan" target="_blank" class="text-slate-400 hover:text-white transition-colors p-2 text-sm" title="View Source on GitHub">
-          <i class="fa-brands fa-github text-xl"></i>
+        <a href="https://github.com/Kien-devops/anhvan" target="_blank" class="w-9 h-9 rounded-xl bg-white border-2 border-[#151515] shadow-[2px_2px_0px_#151515] hover:bg-[#f4d77c] flex items-center justify-center text-[#151515] transition" title="View Source on GitHub">
+          <i class="fa-brands fa-github text-lg"></i>
         </a>
       </div>
     </div>
   </header>
 
+  <!-- Neo-Brutalist Marquee Alert Strip (Style labaws.site) -->
+  <div class="bg-[#f4d77c] border-b-2 border-[#151515] py-2 overflow-hidden select-none">
+    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between text-xs font-black uppercase tracking-wider text-[#151515]">
+      <div class="flex items-center gap-3">
+        <span class="bg-[#151515] text-[#f4d77c] px-2 py-0.5 rounded border border-[#151515] text-[10px]">NOTICE</span>
+        <span>🔥 Mở Mic Lên Mà Bắn Tiếng Anh Đi Mấy Anh Zai • Luyện Nói Mỗi Ngày Đậu Intern Cloud DevOps 🚀</span>
+      </div>
+      <div class="hidden md:flex items-center gap-4 text-[11px]">
+        <span>⚡ 5 Pinned Projects</span>
+        <span>🏅 5 AWS Certs</span>
+        <span>☸️ K3s Homelab server-tang4</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Navigation Tabs -->
   <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
-    <div class="flex space-x-2 border-b border-slate-800/80 pb-3 overflow-x-auto no-scrollbar">
-      <button onclick="switchTab('vocab')" id="tab-vocab" class="tab-btn active px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center space-x-2 transition-all">
+    <div class="flex space-x-2 pb-1 overflow-x-auto no-scrollbar">
+      <button onclick="switchTab('vocab')" id="tab-vocab" class="tab-btn active px-4 py-2.5 rounded-xl text-sm font-black flex items-center space-x-2 transition-all">
         <i class="fa-solid fa-book-bookmark"></i>
         <span>Từ Vựng Mỗi Ngày</span>
       </button>
-      <button onclick="switchTab('phrases')" id="tab-phrases" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center space-x-2 transition-all">
+      <button onclick="switchTab('phrases')" id="tab-phrases" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-black flex items-center space-x-2 transition-all">
         <i class="fa-solid fa-comments"></i>
         <span>Mẫu Câu Standup & Họp</span>
       </button>
-      <button onclick="switchTab('interview')" id="tab-interview" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center space-x-2 transition-all">
+      <button onclick="switchTab('interview')" id="tab-interview" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-black flex items-center space-x-2 transition-all">
         <i class="fa-solid fa-microphone-lines"></i>
         <span>Luyện Phỏng Vấn AI (Mock)</span>
       </button>
-      <button onclick="switchTab('progress')" id="tab-progress" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center space-x-2 transition-all">
+      <button onclick="switchTab('progress')" id="tab-progress" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-black flex items-center space-x-2 transition-all">
         <i class="fa-solid fa-graduation-cap"></i>
         <span>Kho Đã Học & Tiến Độ</span>
-        <span id="badge-learned-count" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 font-bold ml-1">0</span>
+        <span id="badge-learned-count" class="px-2 py-0.5 rounded-md text-[10px] bg-[#f4d77c] border-2 border-[#151515] text-[#151515] font-black ml-1">0</span>
       </button>
-      <button onclick="switchTab('chat')" id="tab-chat" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center space-x-2 transition-all">
+      <button onclick="switchTab('chat')" id="tab-chat" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-black flex items-center space-x-2 transition-all">
         <i class="fa-solid fa-robot"></i>
         <span>DevOps Mentor Chat</span>
       </button>
@@ -77,15 +92,18 @@
 
     <!-- 1. TAB: VOCABULARY -->
     <section id="view-vocab" class="tab-content active space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/40 p-5 rounded-2xl border border-slate-800">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border-2 border-[#151515] shadow-[4px_4px_0px_#151515]">
         <div>
-          <h2 class="text-xl font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-brain text-indigo-400"></i> Daily DevOps & Cloud Vocabulary
+          <h2 class="text-xl font-black text-[#151515] flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-[#5294ff] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] flex items-center justify-center text-white text-sm">
+              <i class="fa-solid fa-brain"></i>
+            </span>
+            Daily DevOps & Cloud Vocabulary
           </h2>
-          <p class="text-sm text-slate-400 mt-1">Từ vựng giao tiếp thực tế + chuyên ngành kỹ thuật để làm việc và trả lời phỏng vấn.</p>
+          <p class="text-xs font-semibold text-slate-600 mt-1">Từ vựng giao tiếp thực tế + chuyên ngành kỹ thuật để làm việc và trả lời phỏng vấn.</p>
         </div>
-        <div class="flex items-center gap-3">
-          <select id="vocab-topic" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500 max-w-[280px]">
+        <div class="flex items-center gap-3 flex-wrap">
+          <select id="vocab-topic" class="bg-white text-[#151515] text-xs font-bold rounded-xl px-3 py-2 border-2 border-[#151515] shadow-[2px_2px_0px_#151515] focus:outline-none max-w-[280px]">
             <optgroup label="📂 Từ Vựng Theo 5 Project Đã Ghim">
               <option value="AWS EKS Network Fabric & GWLB">🛡️ AWS EKS Network Fabric & Suricata</option>
               <option value="AWS Multi-Region Disaster Recovery">🔄 Multi-Region DR & $0 Standby</option>
@@ -107,12 +125,12 @@
               <option value="Workplace Communication">💬 Giao tiếp công sở (Standup/Meeting)</option>
             </optgroup>
           </select>
-          <button onclick="generateAIVocab()" id="btn-gen-vocab" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium text-sm rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-2 transition-all active:scale-95">
+          <button onclick="generateAIVocab()" id="btn-gen-vocab" class="px-4 py-2 bg-[#5294ff] hover:bg-[#3b82f6] text-[#151515] font-black text-xs rounded-xl border-2 border-[#151515] shadow-[3px_3px_0px_#151515] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#151515] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#151515] flex items-center gap-2 transition">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
             <span>AI Gen Từ Mới</span>
           </button>
-          <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer select-none px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700/80 hover:border-slate-600 transition-colors" title="Ẩn các từ bạn đã bấm 'Đã học' khỏi màn hình này">
-            <input type="checkbox" id="chk-hide-learned" onchange="renderVocabCards(currentVocabList)" class="rounded text-indigo-500 focus:ring-0 bg-slate-900 border-slate-700 w-3.5 h-3.5 cursor-pointer">
+          <label class="flex items-center space-x-2 text-xs font-bold text-[#151515] cursor-pointer select-none px-3 py-2 rounded-xl bg-white border-2 border-[#151515] shadow-[2px_2px_0px_#151515] hover:bg-[#f4d77c] transition" title="Ẩn các từ bạn đã bấm 'Đã học' khỏi màn hình này">
+            <input type="checkbox" id="chk-hide-learned" onchange="renderVocabCards(currentVocabList)" class="rounded text-[#151515] focus:ring-0 border-2 border-[#151515] w-3.5 h-3.5 cursor-pointer">
             <span>Ẩn từ đã học</span>
           </label>
         </div>
@@ -126,26 +144,29 @@
 
     <!-- 2. TAB: WORKPLACE PHRASES -->
     <section id="view-phrases" class="tab-content hidden space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/40 p-5 rounded-2xl border border-slate-800">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border-2 border-[#151515] shadow-[4px_4px_0px_#151515]">
         <div>
-          <h2 class="text-xl font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-briefcase text-emerald-400"></i> DevOps Workplace Communication
+          <h2 class="text-xl font-black text-[#151515] flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-[#4ade80] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] flex items-center justify-center text-[#151515] text-sm">
+              <i class="fa-solid fa-briefcase"></i>
+            </span>
+            DevOps Workplace Communication
           </h2>
-          <p class="text-sm text-slate-400 mt-1">Các mẫu câu nói tiếng Anh chuẩn mực khi làm việc trong team công nghệ, báo cáo Daily Standup, xử lý sự cố (Incidents), và review code.</p>
+          <p class="text-xs font-semibold text-slate-600 mt-1">Các mẫu câu nói tiếng Anh chuẩn mực khi làm việc trong team công nghệ, báo cáo Daily Standup, xử lý sự cố (Incidents), và review code.</p>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
-          <select id="phrase-gen-category" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500">
+          <select id="phrase-gen-category" class="bg-white text-[#151515] text-xs font-bold rounded-xl px-3 py-2 border-2 border-[#151515] shadow-[2px_2px_0px_#151515] focus:outline-none">
             <option value="standup">Daily Standup</option>
             <option value="incident">Incident & Troubleshooting</option>
             <option value="pr_review">PR & Code Review</option>
             <option value="blocker">Báo Cáo Blocker</option>
             <option value="architecture">Kiến Trúc & System Design</option>
           </select>
-          <button onclick="generateAIPhrases()" id="btn-gen-phrases" class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-medium text-sm rounded-xl shadow-lg shadow-emerald-500/25 flex items-center gap-2 transition-all active:scale-95">
+          <button onclick="generateAIPhrases()" id="btn-gen-phrases" class="px-4 py-2 bg-[#4ade80] hover:bg-[#22c55e] text-[#151515] font-black text-xs rounded-xl border-2 border-[#151515] shadow-[3px_3px_0px_#151515] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#151515] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#151515] flex items-center gap-2 transition">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
             <span>AI Gen Mẫu Câu Mới</span>
           </button>
-          <button onclick="resetDefaultPhrases()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors" title="Khôi phục mẫu câu mặc định">
+          <button onclick="resetDefaultPhrases()" class="p-2 rounded-xl bg-white hover:bg-[#f4d77c] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] transition" title="Khôi phục mẫu câu mặc định">
             <i class="fa-solid fa-rotate-left"></i>
           </button>
         </div>
@@ -153,32 +174,32 @@
 
       <!-- Category Filter -->
       <div class="flex flex-wrap gap-2">
-        <button onclick="filterPhrases('all')" class="phrase-filter active px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white">Tất cả</button>
-        <button onclick="filterPhrases('standup')" class="phrase-filter px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Daily Standup</button>
-        <button onclick="filterPhrases('incident')" class="phrase-filter px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Incident & Troubleshooting</button>
-        <button onclick="filterPhrases('pr_review')" class="phrase-filter px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">PR & Code Review</button>
-        <button onclick="filterPhrases('blocker')" class="phrase-filter px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Báo cáo Blocker / Nhờ hỗ trợ</button>
-        <button onclick="filterPhrases('architecture')" class="phrase-filter px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Kiến Trúc & Design</button>
+        <button onclick="filterPhrases('all')" class="phrase-filter active px-3.5 py-1.5 rounded-xl text-xs font-black">Tất cả</button>
+        <button onclick="filterPhrases('standup')" class="phrase-filter px-3.5 py-1.5 rounded-xl text-xs font-black">Daily Standup</button>
+        <button onclick="filterPhrases('incident')" class="phrase-filter px-3.5 py-1.5 rounded-xl text-xs font-black">Incident & Troubleshooting</button>
+        <button onclick="filterPhrases('pr_review')" class="phrase-filter px-3.5 py-1.5 rounded-xl text-xs font-black">PR & Code Review</button>
+        <button onclick="filterPhrases('blocker')" class="phrase-filter px-3.5 py-1.5 rounded-xl text-xs font-black">Báo cáo Blocker / Nhờ hỗ trợ</button>
+        <button onclick="filterPhrases('architecture')" class="phrase-filter px-3.5 py-1.5 rounded-xl text-xs font-black">Kiến Trúc & Design</button>
       </div>
 
-      <div id="phrases-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div id="phrases-container" class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <!-- Rendered dynamically -->
       </div>
     </section>
 
     <!-- 3. TAB: MOCK INTERVIEW -->
     <section id="view-interview" class="tab-content hidden space-y-6">
-      <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 p-6 rounded-2xl border border-indigo-500/20 shadow-xl">
+      <div class="bg-[#5294ff] p-6 rounded-2xl border-2 border-[#151515] shadow-[4px_4px_0px_#151515]">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <span class="inline-block px-2.5 py-1 rounded-md bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-2">
+            <span class="inline-block px-2.5 py-1 rounded-lg bg-[#f4d77c] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] text-xs font-black uppercase tracking-wider mb-2">
               Mock Technical Interview
             </span>
-            <h2 class="text-2xl font-black text-white">Luyện Phỏng Vấn DevOps / Cloud Internship</h2>
-            <p class="text-sm text-slate-300 mt-1">AI Tech Lead sẽ hỏi bạn câu hỏi thực tế bằng tiếng Anh. Bạn có thể nói bằng Mic hoặc gõ phím để AI chấm điểm và sửa lỗi!</p>
+            <h2 class="text-2xl font-black text-[#151515]">Luyện Phỏng Vấn DevOps / Cloud Internship</h2>
+            <p class="text-xs font-bold text-[#151515]/90 mt-1">AI Tech Lead sẽ hỏi bạn câu hỏi thực tế bằng tiếng Anh. Bạn có thể nói bằng Mic hoặc gõ phím để AI chấm điểm và sửa lỗi!</p>
           </div>
           <div class="flex items-center gap-2 flex-wrap">
-            <select id="interview-topic" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500 max-w-[320px]">
+            <select id="interview-topic" class="bg-white text-[#151515] text-xs font-bold rounded-xl px-3 py-2 border-2 border-[#151515] shadow-[2px_2px_0px_#151515] focus:outline-none max-w-[320px]">
               <optgroup label="📂 5 Dự Án Đã Ghim (Pinned Projects)">
                 <option value="project:eks-network-fabric">🛡️ Project: AWS EKS Secure Network Fabric (TGW, GWLB, Suricata)</option>
                 <option value="project:multi-region-dr">🔄 Project: AWS Multi-Region Disaster Recovery ($0 Standby, Route 53)</option>
@@ -200,7 +221,7 @@
                 <option value="DevOps Culture & Soft Skills">🤝 Văn hóa DevOps & Xử lý tình huống</option>
               </optgroup>
             </select>
-            <select id="interview-style" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500 max-w-[260px]">
+            <select id="interview-style" class="bg-white text-[#151515] text-xs font-bold rounded-xl px-3 py-2 border-2 border-[#151515] shadow-[2px_2px_0px_#151515] focus:outline-none max-w-[260px]">
               <option value="scenario">⚡ Tình huống thực tế (Scenario / Debug)</option>
               <option value="project">🎯 Hỏi sâu về Dự án của bạn (Project Defense)</option>
               <option value="cert_exam">📜 Chuẩn đề thi chứng chỉ AWS (AWS Exam-style)</option>
@@ -208,7 +229,7 @@
               <option value="core">💡 Khái niệm cốt lõi (Core Concepts)</option>
               <option value="behavioral">🤝 Câu hỏi tình huống (Behavioral / STAR Method)</option>
             </select>
-            <button onclick="requestNewQuestion()" id="btn-new-question" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-2 transition-all active:scale-95">
+            <button onclick="requestNewQuestion()" id="btn-new-question" class="px-4 py-2 bg-[#f4d77c] hover:bg-[#eab308] text-[#151515] font-black text-xs rounded-xl border-2 border-[#151515] shadow-[3px_3px_0px_#151515] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#151515] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#151515] flex items-center gap-2 transition">
               <i class="fa-solid fa-arrows-rotate"></i>
               <span>Lấy câu hỏi mới</span>
             </button>
@@ -217,59 +238,59 @@
       </div>
 
       <!-- Question Card -->
-      <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 space-y-4">
+      <div class="bg-white p-6 rounded-2xl border-2 border-[#151515] shadow-[4px_4px_0px_#151515] space-y-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-2">
-            <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
-            <span id="q-topic-badge" class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Kubernetes</span>
-            <span id="q-difficulty-badge" class="px-2 py-0.5 rounded text-[11px] bg-slate-800 text-slate-400">Medium</span>
+            <span class="w-3 h-3 rounded-full bg-[#4ade80] border border-[#151515]"></span>
+            <span id="q-topic-badge" class="text-xs font-black text-[#151515] uppercase tracking-wide bg-[#f3f6fa] border-2 border-[#151515] px-2.5 py-0.5 rounded-lg shadow-[1px_1px_0px_#151515]">Kubernetes</span>
+            <span id="q-difficulty-badge" class="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-[#f4d77c] border-2 border-[#151515] text-[#151515] shadow-[1px_1px_0px_#151515]">Medium</span>
           </div>
           <div class="flex items-center gap-2">
-            <button onclick="requestQuestionHint()" id="btn-question-hint" class="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-1.5 transition-colors font-medium" title="AI Gợi ý dàn ý và câu trả lời mẫu">
+            <button onclick="requestQuestionHint()" id="btn-question-hint" class="px-3 py-1.5 rounded-xl bg-[#f4d77c] hover:bg-[#eab308] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] text-xs font-black flex items-center gap-1.5 transition active:scale-95" title="AI Gợi ý dàn ý và câu trả lời mẫu">
               <i class="fa-solid fa-wand-magic-sparkles"></i>
               <span>💡 Gen câu gợi ý</span>
             </button>
-            <button onclick="toggleSpeakQuestion()" id="btn-speak-question" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-2 transition-all border border-slate-700 shadow-sm" title="Bấm để nghe, bấm lần nữa để dừng">
-              <i class="fa-solid fa-volume-high text-indigo-400"></i>
+            <button onclick="toggleSpeakQuestion()" id="btn-speak-question" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#f3f6fa] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] text-xs font-bold flex items-center gap-2 transition active:scale-95" title="Bấm để nghe, bấm lần nữa để dừng">
+              <i class="fa-solid fa-volume-high text-[#5294ff]"></i>
               <span>Nghe câu hỏi</span>
             </button>
           </div>
         </div>
 
-        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
-          <p id="interview-question-text" class="text-lg font-bold text-white leading-relaxed">
+        <div class="p-5 rounded-xl bg-[#f8fafc] border-2 border-[#151515]">
+          <p id="interview-question-text" class="text-lg font-black text-[#151515] leading-relaxed">
             "What is the difference between a Pod and a Deployment in Kubernetes, and when would you use a Deployment?"
           </p>
-          <div id="interview-guidance" class="mt-3 text-xs text-indigo-300 bg-indigo-500/10 p-2.5 rounded-lg border border-indigo-500/20">
-            <i class="fa-solid fa-lightbulb mr-1"></i> <b>Gợi ý trả lời:</b> Nêu rõ Pod là đơn vị nhỏ nhất chứa container, còn Deployment quản lý replica, rolling update và self-healing.
+          <div id="interview-guidance" class="mt-3 text-xs text-[#151515] bg-[#fffbeb] p-3 rounded-xl border-2 border-[#151515] font-medium">
+            <i class="fa-solid fa-lightbulb mr-1 text-amber-500"></i> <b>Gợi ý trả lời:</b> Nêu rõ Pod là đơn vị nhỏ nhất chứa container, còn Deployment quản lý replica, rolling update và self-healing.
           </div>
           <!-- Question Hint Container -->
-          <div id="question-hint-box" class="hidden mt-3 p-4 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-3">
+          <div id="question-hint-box" class="hidden mt-3 p-4 rounded-xl bg-[#fffbeb] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] space-y-3">
           </div>
         </div>
 
         <!-- Answer Input Box -->
         <div class="space-y-3 pt-2">
-          <label class="block text-sm font-medium text-slate-300">
+          <label class="block text-xs font-black uppercase tracking-wider text-[#151515]">
             Câu trả lời của bạn (Bằng tiếng Anh):
           </label>
           <div class="relative">
-            <textarea id="candidate-answer" rows="4" placeholder="Type your answer in English or click the microphone to speak..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-['JetBrains_Mono'] leading-relaxed"></textarea>
+            <textarea id="candidate-answer" rows="4" placeholder="Type your answer in English or click the microphone to speak..." class="w-full bg-white border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-xl p-4 text-sm text-[#151515] placeholder-slate-400 focus:outline-none font-['JetBrains_Mono'] leading-relaxed"></textarea>
             
-            <button onclick="toggleSpeechRecognition()" id="btn-mic" class="absolute bottom-3 right-3 p-3 rounded-full bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white transition-all shadow-md" title="Bấm để nói bằng Microphone">
+            <button onclick="toggleSpeechRecognition()" id="btn-mic" class="absolute bottom-3 right-3 p-3 rounded-xl bg-[#5294ff] hover:bg-[#3b82f6] text-[#151515] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] hover:-translate-x-0.5 hover:-translate-y-0.5 transition" title="Bấm để nói bằng Microphone">
               <i class="fa-solid fa-microphone text-base"></i>
             </button>
           </div>
-          <div id="mic-status" class="text-xs text-slate-400 flex items-center gap-1.5 hidden">
+          <div id="mic-status" class="text-xs text-[#151515] font-bold flex items-center gap-1.5 hidden bg-rose-100 p-2 rounded-lg border-2 border-[#151515]">
             <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
-            <span class="text-rose-400 font-medium">Đang lắng nghe giọng nói của bạn... Hãy nói bằng tiếng Anh!</span>
+            <span>Đang lắng nghe giọng nói của bạn... Hãy nói bằng tiếng Anh!</span>
           </div>
 
           <div class="flex items-center justify-end space-x-3 pt-2">
-            <button onclick="document.getElementById('candidate-answer').value = ''" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+            <button onclick="document.getElementById('candidate-answer').value = ''" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-[#151515] bg-white border-2 border-transparent hover:border-[#151515] transition">
               Xóa câu trả lời
             </button>
-            <button onclick="submitAnswerForEvaluation()" id="btn-submit-eval" class="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/25 flex items-center gap-2 transition-all active:scale-95">
+            <button onclick="submitAnswerForEvaluation()" id="btn-submit-eval" class="px-6 py-2.5 bg-[#4ade80] hover:bg-[#22c55e] text-[#151515] font-black text-sm rounded-xl border-2 border-[#151515] shadow-[3px_3px_0px_#151515] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#151515] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#151515] flex items-center gap-2 transition">
               <i class="fa-solid fa-paper-plane"></i>
               <span>Nộp bài & Chấm Điểm AI</span>
             </button>
@@ -285,46 +306,46 @@
 
     <!-- 5. TAB: PROGRESS & LEARNED REPOSITORY -->
     <section id="view-progress" class="tab-content hidden space-y-6">
-      <div class="bg-gradient-to-r from-slate-900 via-emerald-950/30 to-slate-900 p-6 rounded-2xl border border-emerald-500/20 shadow-xl">
+      <div class="bg-white p-6 rounded-2xl border-2 border-[#151515] shadow-[4px_4px_0px_#151515]">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span class="inline-block px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-2">
+            <span class="inline-block px-2.5 py-1 rounded-lg bg-[#4ade80] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] text-xs font-black uppercase tracking-wider mb-2">
               Persistent Storage &bull; server-tang4 (/opt/anhvan-data)
             </span>
-            <h2 class="text-2xl font-black text-white">Kho Đã Học & Tiến Độ Luyện Tập</h2>
-            <p class="text-sm text-slate-300 mt-1">Lưu trữ toàn bộ từ vựng bạn đã thuộc và lịch sử các câu hỏi phỏng vấn đã được AI chấm điểm.</p>
+            <h2 class="text-2xl font-black text-[#151515]">Kho Đã Học & Tiến Độ Luyện Tập</h2>
+            <p class="text-xs font-semibold text-slate-600 mt-1">Lưu trữ toàn bộ từ vựng bạn đã thuộc và lịch sử các câu hỏi phỏng vấn đã được AI chấm điểm.</p>
           </div>
-          <button onclick="loadProgressData()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-colors">
+          <button onclick="loadProgressData()" class="px-4 py-2 rounded-xl bg-white hover:bg-[#f4d77c] text-[#151515] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-xs font-black flex items-center gap-2 transition">
             <i class="fa-solid fa-rotate"></i> Làm mới dữ liệu
           </button>
         </div>
 
         <!-- Progress Metrics -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-          <div class="bg-slate-950/70 border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+          <div class="bg-[#f8fafc] border-2 border-[#151515] shadow-[3px_3px_0px_#151515] p-4 rounded-xl flex items-center justify-between">
             <div>
-              <p class="text-xs text-slate-400 font-medium">Từ vựng đã thuộc</p>
-              <h3 id="stat-vocab-count" class="text-2xl font-black text-emerald-400 mt-1">0</h3>
+              <p class="text-xs text-slate-600 font-bold uppercase tracking-wider">Từ vựng đã thuộc</p>
+              <h3 id="stat-vocab-count" class="text-3xl font-black text-[#151515] mt-1">0</h3>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
+            <div class="w-12 h-12 rounded-xl bg-[#4ade80] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] flex items-center justify-center text-xl">
               <i class="fa-solid fa-book-bookmark"></i>
             </div>
           </div>
-          <div class="bg-slate-950/70 border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+          <div class="bg-[#f8fafc] border-2 border-[#151515] shadow-[3px_3px_0px_#151515] p-4 rounded-xl flex items-center justify-between">
             <div>
-              <p class="text-xs text-slate-400 font-medium">Bài phỏng vấn đã luyện</p>
-              <h3 id="stat-interview-count" class="text-2xl font-black text-indigo-400 mt-1">0</h3>
+              <p class="text-xs text-slate-600 font-bold uppercase tracking-wider">Bài phỏng vấn đã luyện</p>
+              <h3 id="stat-interview-count" class="text-3xl font-black text-[#151515] mt-1">0</h3>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg">
+            <div class="w-12 h-12 rounded-xl bg-[#5294ff] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-white flex items-center justify-center text-xl">
               <i class="fa-solid fa-microphone-lines"></i>
             </div>
           </div>
-          <div class="bg-slate-950/70 border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+          <div class="bg-[#f8fafc] border-2 border-[#151515] shadow-[3px_3px_0px_#151515] p-4 rounded-xl flex items-center justify-between">
             <div>
-              <p class="text-xs text-slate-400 font-medium">Điểm TB Phỏng vấn</p>
-              <h3 id="stat-avg-score" class="text-2xl font-black text-amber-400 mt-1">--/10</h3>
+              <p class="text-xs text-slate-600 font-bold uppercase tracking-wider">Điểm TB Phỏng vấn</p>
+              <h3 id="stat-avg-score" class="text-3xl font-black text-[#151515] mt-1">--/10</h3>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
+            <div class="w-12 h-12 rounded-xl bg-[#f4d77c] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] flex items-center justify-center text-xl">
               <i class="fa-solid fa-star"></i>
             </div>
           </div>
@@ -332,12 +353,12 @@
       </div>
 
       <!-- Learned Vocab Section -->
-      <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-800 space-y-4">
+      <div class="bg-white p-6 rounded-2xl border-2 border-[#151515] shadow-[4px_4px_0px_#151515] space-y-4">
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-emerald-400"></i> Danh Sách Từ Vựng Đã Thuộc
+          <h3 class="text-lg font-black text-[#151515] flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-600"></i> Danh Sách Từ Vựng Đã Thuộc
           </h3>
-          <span class="text-xs text-slate-400">Bấm nút "Đã học" tại tab Từ Vựng để thêm/bớt</span>
+          <span class="text-xs font-semibold text-slate-500">Bấm nút "Đã học" tại tab Từ Vựng để thêm/bớt</span>
         </div>
         <div id="learned-vocab-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <!-- Rendered dynamically -->
@@ -345,9 +366,9 @@
       </div>
 
       <!-- Practiced Interview History Section -->
-      <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-800 space-y-4">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> Lịch Sử Các Câu Phỏng Vấn Đã Chấm Điểm
+      <div class="bg-white p-6 rounded-2xl border-2 border-[#151515] shadow-[4px_4px_0px_#151515] space-y-4">
+        <h3 class="text-lg font-black text-[#151515] flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-[#5294ff]"></i> Lịch Sử Các Câu Phỏng Vấn Đã Chấm Điểm
         </h3>
         <div id="interview-history-container" class="space-y-4">
           <!-- Rendered dynamically -->
@@ -357,20 +378,20 @@
 
     <!-- 4. TAB: MENTOR CHAT -->
     <section id="view-chat" class="tab-content hidden space-y-4">
-      <div class="bg-slate-900/40 p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div class="bg-white p-4 rounded-2xl border-2 border-[#151515] shadow-[4px_4px_0px_#151515] flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-[#5294ff] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] flex items-center justify-center text-white font-bold shrink-0">
             <i class="fa-solid fa-user-astronaut"></i>
           </div>
           <div>
-            <h3 class="font-bold text-white text-sm">Alex - Senior DevOps Mentor</h3>
-            <p class="text-xs text-slate-400">Trò chuyện luyện phản xạ tiếng Anh, hỏi đáp kỹ thuật & phỏng vấn</p>
+            <h3 class="font-black text-[#151515] text-sm">Alex - Senior DevOps Mentor</h3>
+            <p class="text-xs font-semibold text-slate-600">Trò chuyện luyện phản xạ tiếng Anh, hỏi đáp kỹ thuật & phỏng vấn</p>
           </div>
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
           <!-- Chủ đề Mentor Chat -->
-          <select id="chat-topic" onchange="onChatTopicChange()" class="bg-slate-800 text-slate-200 text-xs rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500 font-medium max-w-[320px]">
+          <select id="chat-topic" onchange="onChatTopicChange()" class="bg-white text-[#151515] text-xs font-bold rounded-xl px-3 py-2 border-2 border-[#151515] shadow-[2px_2px_0px_#151515] focus:outline-none max-w-[320px]">
             <optgroup label="⚙️ Nền Tảng Kỹ Thuật">
               <option value="k8s">☸️ Kubernetes & Container Troubleshooting</option>
               <option value="aws">☁️ AWS Cloud & 5 Certifications (DOP, SAA, SOA...)</option>
@@ -391,7 +412,7 @@
             </optgroup>
           </select>
 
-          <button onclick="clearChatHistory()" class="px-3 py-2 rounded-xl text-xs text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors shrink-0" title="Làm mới cuộc trò chuyện">
+          <button onclick="clearChatHistory()" class="px-3 py-2 rounded-xl text-xs font-bold bg-white text-[#151515] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] hover:bg-[#f4d77c] transition shrink-0" title="Làm mới cuộc trò chuyện">
             <i class="fa-solid fa-rotate-left mr-1"></i> Làm mới chat
           </button>
         </div>
@@ -400,30 +421,30 @@
       <!-- Quick Suggestion Chips for Chat -->
       <div class="space-y-1.5">
         <div class="flex items-center justify-between px-1">
-          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-bolt text-amber-400"></i> Gợi ý câu hỏi nhanh theo chủ đề:
+          <span class="text-[11px] font-black text-[#151515] uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt text-amber-500"></i> Gợi ý câu hỏi nhanh theo chủ đề:
           </span>
-          <span class="text-[11px] text-slate-500">Bấm để chat ngay</span>
+          <span class="text-[11px] font-semibold text-slate-500">Bấm để chat ngay</span>
         </div>
         <div id="chat-quick-chips" class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
           <!-- Rendered dynamically -->
         </div>
       </div>
 
-      <div id="chat-messages" class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 h-[460px] overflow-y-auto space-y-4">
+      <div id="chat-messages" class="bg-white border-2 border-[#151515] shadow-[4px_4px_0px_#151515] rounded-2xl p-5 h-[460px] overflow-y-auto space-y-4">
         <div class="flex items-start space-x-3">
-          <div class="w-8 h-8 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xs shrink-0">
+          <div class="w-8 h-8 rounded-xl bg-[#5294ff] border-2 border-[#151515] shadow-[1px_1px_0px_#151515] flex items-center justify-center text-white text-xs shrink-0">
             <i class="fa-solid fa-robot"></i>
           </div>
-          <div class="bg-slate-900 p-3.5 rounded-2xl rounded-tl-none border border-slate-800 text-sm max-w-[85%] text-slate-200">
+          <div class="bg-[#f8fafc] p-4 rounded-2xl rounded-tl-none border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-sm max-w-[85%] text-[#151515] font-medium leading-relaxed">
             Hey Kien! I'm Alex, your DevOps & Cloud mentor. What would you like to practice today? We can simulate a mock interview, discuss Kubernetes troubleshooting, or practice your daily standup update!
           </div>
         </div>
       </div>
 
       <div class="flex items-center space-x-2">
-        <input type="text" id="chat-input" placeholder="Type your message in English (or ask for help in Vietnamese)..." onkeydown="if(event.key==='Enter') sendChatMessage()" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-['JetBrains_Mono']">
-        <button onclick="sendChatMessage()" id="btn-send-chat" class="px-5 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold text-sm rounded-xl transition-all shadow-lg shadow-indigo-500/20">
+        <input type="text" id="chat-input" placeholder="Type your message in English (or ask for help in Vietnamese)..." onkeydown="if(event.key==='Enter') sendChatMessage()" class="flex-1 bg-white border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-xl px-4 py-3 text-sm text-[#151515] placeholder-slate-400 focus:outline-none font-['JetBrains_Mono'] font-medium">
+        <button onclick="sendChatMessage()" id="btn-send-chat" class="px-5 py-3 bg-[#5294ff] hover:bg-[#3b82f6] text-[#151515] font-black text-sm rounded-xl border-2 border-[#151515] shadow-[2px_2px_0px_#151515] hover:-translate-x-0.5 hover:-translate-y-0.5 transition">
           <i class="fa-solid fa-paper-plane"></i>
         </button>
       </div>
@@ -432,10 +453,10 @@
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-slate-800/80 py-5 mt-auto bg-slate-950">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+  <footer class="border-t-2 border-[#151515] py-5 mt-auto bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs font-bold text-[#151515] flex flex-col sm:flex-row items-center justify-between gap-2">
       <div>
-        <span>DevOps Cloud English Platform</span> • <span>Deploy trên Homelab K3s (<code class="text-indigo-400">anhvan.onprem.site</code>)</span>
+        <span>DevOps Cloud English Platform</span> • <span>Deploy trên Homelab K3s (<code class="bg-[#f4d77c] px-1 py-0.5 rounded border border-[#151515]">anhvan.onprem.site</code>)</span>
       </div>
       <div>
         Powered by <b>9Router AI Gateway</b> &bull; Built for DevOps/Cloud Internship Prep
@@ -443,7 +464,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=2.5.0"></script>
+  <script src="app.js?v=3.0.0"></script>
 </body>
 </html>
-

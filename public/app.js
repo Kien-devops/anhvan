@@ -251,7 +251,7 @@ function updateProgressUI() {
 
 async function loadDefaultVocab() {
   const grid = document.getElementById('vocab-grid');
-  grid.innerHTML = `<div class="col-span-full py-10 text-center text-slate-400"><i class="fa-solid fa-spinner fa-spin text-xl text-indigo-400"></i> Đang tải từ vựng...</div>`;
+  grid.innerHTML = `<div class="col-span-full py-10 text-center text-[#151515] font-bold"><i class="fa-solid fa-spinner fa-spin text-xl text-[#5294ff]"></i> Đang tải từ vựng...</div>`;
 
   try {
     const res = await fetch('/api/vocab/defaults?t=' + Date.now());
@@ -268,7 +268,7 @@ async function loadDefaultVocab() {
 function renderVocabCards(list) {
   const grid = document.getElementById('vocab-grid');
   if (!list || list.length === 0) {
-    grid.innerHTML = `<div class="col-span-full py-8 text-center text-slate-500">Chưa có từ vựng nào. Hãy bấm "AI Gen Từ Mới"!</div>`;
+    grid.innerHTML = `<div class="col-span-full py-8 text-center text-[#151515] font-bold">Chưa có từ vựng nào. Hãy bấm "AI Gen Từ Mới"!</div>`;
     return;
   }
 
@@ -279,10 +279,10 @@ function renderVocabCards(list) {
 
   if (filteredList.length === 0) {
     grid.innerHTML = `
-      <div class="col-span-full py-12 text-center text-slate-400 bg-slate-900/30 rounded-2xl border border-slate-800">
-        <i class="fa-solid fa-circle-check text-2xl text-emerald-400 mb-2"></i>
-        <p class="text-sm font-semibold text-white">Bạn đã thuộc hết các từ vựng này rồi!</p>
-        <p class="text-xs text-slate-400 mt-1">Bỏ tick "Ẩn từ đã học" để ôn lại, hoặc bấm "AI Gen Từ Mới" để học thêm từ mới nhé.</p>
+      <div class="col-span-full py-12 text-center text-[#151515] bg-white rounded-2xl border-2 border-[#151515] shadow-[4px_4px_0px_#151515] p-6">
+        <i class="fa-solid fa-circle-check text-2xl text-emerald-600 mb-2"></i>
+        <p class="text-sm font-black text-[#151515]">Bạn đã thuộc hết các từ vựng này rồi!</p>
+        <p class="text-xs text-slate-600 font-semibold mt-1">Bỏ tick "Ẩn từ đã học" để ôn lại, hoặc bấm "AI Gen Từ Mới" để học thêm từ mới nhé.</p>
       </div>
     `;
     return;
@@ -291,44 +291,44 @@ function renderVocabCards(list) {
   grid.innerHTML = filteredList.map((item) => {
     const isLearned = learnedVocabMap.has(item.term.toLowerCase());
     return `
-    <div class="bg-slate-900/60 hover:bg-slate-900/90 border ${isLearned ? 'border-emerald-500/50 bg-emerald-950/10' : 'border-slate-800'} hover:border-indigo-500/40 rounded-2xl p-5 transition-all duration-200 flex flex-col justify-between group shadow-sm hover:shadow-lg">
+    <div class="bg-white border-2 border-[#151515] shadow-[4px_4px_0px_#151515] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#151515] rounded-2xl p-5 transition-all duration-200 flex flex-col justify-between group ${isLearned ? 'bg-[#f0fdf4]' : ''}">
       <div class="space-y-3">
         <div class="flex items-center justify-between">
-          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+          <span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-[#f4d77c] border-2 border-[#151515] text-[#151515] shadow-[1px_1px_0px_#151515]">
             ${item.category || 'DevOps'}
           </span>
           <div class="flex items-center space-x-1.5">
-            <button onclick="toggleLearnedVocab('${item.term.replace(/'/g, "\\'")}', '${(item.category||'').replace(/'/g, "\\'")}', '${(item.ipa||'').replace(/'/g, "\\'")}', '${(item.viMeaning||'').replace(/'/g, "\\'")}', '${(item.definition||'').replace(/'/g, "\\'")}', '${(item.example||'').replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${isLearned ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-emerald-300'}" title="${isLearned ? 'Bấm để bỏ đánh dấu' : 'Bấm để đánh dấu đã thuộc từ này'}">
+            <button onclick="toggleLearnedVocab('${item.term.replace(/'/g, "\\'")}', '${(item.category||'').replace(/'/g, "\\'")}', '${(item.ipa||'').replace(/'/g, "\\'")}', '${(item.viMeaning||'').replace(/'/g, "\\'")}', '${(item.definition||'').replace(/'/g, "\\'")}', '${(item.example||'').replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-xl text-xs font-black flex items-center gap-1 transition-all border-2 border-[#151515] ${isLearned ? 'bg-[#4ade80] text-[#151515] shadow-[2px_2px_0px_#151515]' : 'bg-white text-[#151515] shadow-[2px_2px_0px_#151515] hover:bg-[#f4d77c]'}" title="${isLearned ? 'Bấm để bỏ đánh dấu' : 'Bấm để đánh dấu đã thuộc từ này'}">
               <i class="fa-solid fa-check"></i>
               <span>${isLearned ? 'Đã học' : 'Học từ này'}</span>
             </button>
-            <button onclick="toggleSpeak('${item.term.replace(/'/g, "\\'")}', this)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors border border-transparent" title="Bấm nghe phát âm, bấm lần nữa để dừng">
-              <i class="fa-solid fa-volume-high text-xs"></i>
+            <button onclick="toggleSpeak('${item.term.replace(/'/g, "\\'")}', this)" class="w-8 h-8 rounded-xl bg-white hover:bg-[#e7ebf1] text-[#151515] flex items-center justify-center transition-colors border-2 border-[#151515] shadow-[2px_2px_0px_#151515]" title="Bấm nghe phát âm, bấm lần nữa để dừng">
+              <i class="fa-solid fa-volume-high text-xs text-[#5294ff]"></i>
             </button>
           </div>
         </div>
 
         <div>
-          <h3 class="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">${item.term}</h3>
-          <p class="text-xs font-mono text-slate-400 mt-0.5">${item.ipa || ''}</p>
+          <h3 class="text-lg font-black text-[#151515] group-hover:text-[#5294ff] transition-colors">${item.term}</h3>
+          <p class="text-xs font-mono font-bold text-slate-500 mt-0.5">${item.ipa || ''}</p>
         </div>
 
-        <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80">
-          <p class="text-xs font-semibold text-emerald-400">Nghĩa: ${item.viMeaning}</p>
-          <p class="text-xs text-slate-300 mt-1 leading-relaxed">${item.definition}</p>
+        <div class="p-3 rounded-xl bg-[#f8fafc] border-2 border-[#151515]">
+          <p class="text-xs font-black text-[#151515]">Nghĩa: <span class="bg-[#f4d77c] px-1.5 py-0.5 rounded border border-[#151515]">${item.viMeaning}</span></p>
+          <p class="text-xs text-[#151515] font-semibold mt-1.5 leading-relaxed">${item.definition}</p>
         </div>
 
         <div class="pt-1">
-          <p class="text-[11px] uppercase tracking-wider text-slate-500 font-bold">Ví dụ thực tế:</p>
-          <p class="text-xs text-slate-300 italic mt-0.5 border-l-2 border-indigo-500/60 pl-2">
+          <p class="text-[11px] uppercase tracking-wider text-[#151515] font-black">Ví dụ thực tế:</p>
+          <p class="text-xs text-[#151515] font-medium italic mt-0.5 border-l-4 border-[#5294ff] pl-2">
             "${item.example}"
           </p>
         </div>
       </div>
 
       <div class="pt-4 flex justify-end">
-        <button onclick="toggleSpeak('${item.example.replace(/'/g, "\\'")}', this)" class="text-xs text-slate-400 hover:text-indigo-300 flex items-center gap-1.5 transition-colors" title="Bấm nghe ví dụ, bấm lần nữa để dừng">
-          <i class="fa-solid fa-play text-[10px]"></i> <span>Nghe ví dụ</span>
+        <button onclick="toggleSpeak('${item.example.replace(/'/g, "\\'")}', this)" class="text-xs font-black text-[#151515] bg-white border-2 border-[#151515] shadow-[2px_2px_0px_#151515] px-2.5 py-1 rounded-lg hover:bg-[#f4d77c] flex items-center gap-1.5 transition" title="Bấm nghe ví dụ, bấm lần nữa để dừng">
+          <i class="fa-solid fa-play text-[10px] text-[#5294ff]"></i> <span>Nghe ví dụ</span>
         </button>
       </div>
     </div>
@@ -376,7 +376,7 @@ function renderLearnedVocab() {
 
   if (learnedVocabMap.size === 0) {
     container.innerHTML = `
-      <div class="col-span-full py-10 text-center text-slate-400 bg-slate-950/40 rounded-xl border border-slate-800">
+      <div class="col-span-full py-10 text-center text-[#151515] bg-[#f8fafc] rounded-2xl border-2 border-[#151515] p-6 font-bold">
         <i class="fa-solid fa-book-open-reader text-2xl text-slate-500 mb-2"></i>
         <p class="text-xs">Bạn chưa đánh dấu từ vựng nào. Hãy sang tab "Từ Vựng Mỗi Ngày" và bấm "Học từ này"!</p>
       </div>
@@ -386,26 +386,26 @@ function renderLearnedVocab() {
 
   const list = Array.from(learnedVocabMap.values());
   container.innerHTML = list.map(item => `
-    <div class="bg-slate-950/80 border border-emerald-500/30 rounded-xl p-4 flex flex-col justify-between space-y-2">
+    <div class="bg-white border-2 border-[#151515] shadow-[3px_3px_0px_#151515] rounded-xl p-4 flex flex-col justify-between space-y-2">
       <div>
         <div class="flex items-center justify-between">
-          <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">
+          <span class="text-[10px] font-black px-2 py-0.5 rounded-lg bg-[#4ade80] border-2 border-[#151515] text-[#151515] shadow-[1px_1px_0px_#151515]">
             ${item.category || 'DevOps'}
           </span>
           <div class="flex items-center space-x-1">
-            <button onclick="toggleSpeak('${item.term.replace(/'/g, "\\'")}', this)" class="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white" title="Bấm nghe, bấm lần nữa để dừng">
-              <i class="fa-solid fa-volume-high text-xs"></i>
+            <button onclick="toggleSpeak('${item.term.replace(/'/g, "\\'")}', this)" class="p-1.5 rounded-lg border-2 border-[#151515] shadow-[1px_1px_0px_#151515] bg-white hover:bg-[#f4d77c] text-[#151515]" title="Bấm nghe, bấm lần nữa để dừng">
+              <i class="fa-solid fa-volume-high text-xs text-[#5294ff]"></i>
             </button>
-            <button onclick="deleteLearnedVocab('${item.term.replace(/'/g, "\\'")}')" class="p-1.5 rounded hover:bg-rose-500/20 text-slate-500 hover:text-rose-400" title="Xóa khỏi kho đã học">
+            <button onclick="deleteLearnedVocab('${item.term.replace(/'/g, "\\'")}')" class="p-1.5 rounded-lg border-2 border-[#151515] shadow-[1px_1px_0px_#151515] bg-white hover:bg-rose-200 text-rose-600" title="Xóa khỏi kho đã học">
               <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
           </div>
         </div>
-        <h4 class="text-base font-bold text-white mt-1">${item.term}</h4>
-        <p class="text-xs text-emerald-300 font-medium">${item.viMeaning || ''}</p>
-        <p class="text-[11px] text-slate-400 mt-1 line-clamp-2">${item.definition || ''}</p>
+        <h4 class="text-base font-black text-[#151515] mt-1">${item.term}</h4>
+        <p class="text-xs text-[#151515] font-black bg-[#f4d77c] px-1 py-0.5 rounded border border-[#151515] inline-block mt-0.5">${item.viMeaning || ''}</p>
+        <p class="text-[11px] text-slate-600 font-semibold mt-1 line-clamp-2">${item.definition || ''}</p>
       </div>
-      <div class="pt-2 border-t border-slate-800/80 text-[10px] text-slate-500 italic">
+      <div class="pt-2 border-t-2 border-[#151515] text-[10px] text-slate-700 italic font-medium">
         "${item.example || ''}"
       </div>
     </div>
@@ -418,7 +418,7 @@ function renderInterviewHistory() {
 
   if (interviewHistoryList.length === 0) {
     container.innerHTML = `
-      <div class="py-10 text-center text-slate-400 bg-slate-950/40 rounded-xl border border-slate-800">
+      <div class="py-10 text-center text-[#151515] bg-[#f8fafc] rounded-2xl border-2 border-[#151515] p-6 font-bold">
         <i class="fa-solid fa-microphone text-2xl text-slate-500 mb-2"></i>
         <p class="text-xs">Chưa có bài phỏng vấn nào được lưu. Hãy sang tab "Luyện Phỏng Vấn AI" để trả lời câu hỏi và nhận chấm điểm!</p>
       </div>
@@ -427,44 +427,44 @@ function renderInterviewHistory() {
   }
 
   container.innerHTML = interviewHistoryList.map(item => {
-    const scoreColor = item.score >= 8 ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : (item.score >= 6 ? 'text-amber-400 border-amber-500/30 bg-amber-500/10' : 'text-rose-400 border-rose-500/30 bg-rose-500/10');
+    const scoreBg = item.score >= 8 ? 'bg-[#4ade80]' : (item.score >= 6 ? 'bg-[#f4d77c]' : 'bg-rose-200');
     return `
-      <div class="bg-slate-950/80 border border-slate-800 hover:border-slate-700 rounded-xl p-5 space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
+      <div class="bg-white border-2 border-[#151515] shadow-[3px_3px_0px_#151515] hover:shadow-[5px_5px_0px_#151515] rounded-xl p-5 space-y-3 transition">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b-2 border-[#151515]">
           <div>
-            <span class="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">${item.topic || 'DevOps Interview'}</span>
-            <p class="text-sm font-bold text-white mt-0.5">"${item.question}"</p>
+            <span class="text-[11px] font-black text-[#151515] uppercase tracking-wider bg-[#f4d77c] border border-[#151515] px-2 py-0.5 rounded">${item.topic || 'DevOps Interview'}</span>
+            <p class="text-sm font-black text-[#151515] mt-1.5">"${item.question}"</p>
           </div>
           <div class="flex items-center space-x-3 shrink-0">
-            <div class="px-3 py-1 rounded-xl border ${scoreColor} text-center">
-              <span class="text-lg font-black">${item.score}</span><span class="text-[10px] text-slate-400">/10</span>
+            <div class="px-3 py-1 rounded-xl border-2 border-[#151515] shadow-[2px_2px_0px_#151515] ${scoreBg} text-center">
+              <span class="text-lg font-black text-[#151515]">${item.score}</span><span class="text-[10px] font-bold text-[#151515]">/10</span>
             </div>
-            <button onclick="deleteInterviewHistory('${item.id}')" class="p-2 rounded-lg hover:bg-rose-500/20 text-slate-500 hover:text-rose-400" title="Xóa bài này">
+            <button onclick="deleteInterviewHistory('${item.id}')" class="p-2 rounded-xl border-2 border-[#151515] shadow-[1px_1px_0px_#151515] bg-white hover:bg-rose-200 text-rose-600" title="Xóa bài này">
               <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
           </div>
         </div>
 
         <div>
-          <p class="text-[11px] uppercase font-bold text-slate-400">Câu trả lời của bạn:</p>
-          <p class="text-xs text-slate-200 bg-slate-900 p-2.5 rounded-lg border border-slate-800/80 font-mono mt-1">
+          <p class="text-[11px] uppercase font-black text-[#151515]">Câu trả lời của bạn:</p>
+          <p class="text-xs text-[#151515] bg-[#f8fafc] p-3 rounded-xl border-2 border-[#151515] font-mono mt-1 font-medium">
             ${item.answer}
           </p>
         </div>
 
-        <div class="text-xs text-slate-300">
-          <span class="text-emerald-400 font-semibold">Nhận xét AI:</span> ${item.summary_vi || ''}
+        <div class="text-xs text-[#151515] font-semibold bg-[#f0fdf4] p-3 rounded-xl border-2 border-[#151515]">
+          <span class="text-emerald-700 font-black">Nhận xét AI:</span> ${item.summary_vi || ''}
         </div>
 
         ${item.model_answer_en ? `
-          <div class="p-3 bg-indigo-950/20 border border-indigo-500/20 rounded-lg">
+          <div class="p-3 bg-[#fffbeb] border-2 border-[#151515] rounded-xl space-y-1">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-[11px] font-bold text-indigo-300 uppercase">Câu trả lời mẫu chuẩn:</span>
-              <button onclick="toggleSpeak('${item.model_answer_en.replace(/'/g, "\\'")}', this)" class="text-[10px] text-indigo-400 hover:text-indigo-200 flex items-center gap-1" title="Bấm nghe, bấm lần nữa để dừng">
-                <i class="fa-solid fa-volume-high"></i> <span>Nghe</span>
+              <span class="text-[11px] font-black text-[#151515] uppercase">Câu trả lời mẫu chuẩn:</span>
+              <button onclick="toggleSpeak('${item.model_answer_en.replace(/'/g, "\\'")}', this)" class="text-[10px] font-bold text-[#151515] bg-white border border-[#151515] px-2 py-0.5 rounded shadow-[1px_1px_0px_#151515] hover:bg-[#f4d77c] flex items-center gap-1" title="Bấm nghe, bấm lần nữa để dừng">
+                <i class="fa-solid fa-volume-high text-[#5294ff]"></i> <span>Nghe</span>
               </button>
             </div>
-            <p class="text-xs text-slate-200 font-mono italic">"${item.model_answer_en}"</p>
+            <p class="text-xs text-[#151515] font-mono italic font-medium">"${item.model_answer_en}"</p>
           </div>
         ` : ''}
       </div>
@@ -601,10 +601,10 @@ function renderPhrases(filter = 'all') {
 
   if (!filtered || filtered.length === 0) {
     container.innerHTML = `
-      <div class="col-span-full py-12 text-center text-slate-400 bg-slate-900/30 rounded-2xl border border-slate-800">
+      <div class="col-span-full py-12 text-center text-[#151515] bg-white rounded-2xl border-2 border-[#151515] shadow-[4px_4px_0px_#151515] p-6 font-bold">
         <i class="fa-solid fa-comments text-2xl text-slate-500 mb-2"></i>
-        <p class="text-sm">Chưa có mẫu câu nào cho danh mục này.</p>
-        <button onclick="generateAIPhrases()" class="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl">
+        <p class="text-sm font-black">Chưa có mẫu câu nào cho danh mục này.</p>
+        <button onclick="generateAIPhrases()" class="mt-3 px-4 py-2 bg-[#4ade80] hover:bg-[#22c55e] text-[#151515] text-xs font-black rounded-xl border-2 border-[#151515] shadow-[2px_2px_0px_#151515]">
           <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Bấm để AI sinh mẫu câu ngay
         </button>
       </div>
@@ -613,27 +613,27 @@ function renderPhrases(filter = 'all') {
   }
 
   container.innerHTML = filtered.map(item => `
-    <div class="bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800 hover:border-emerald-500/40 rounded-2xl p-5 flex flex-col justify-between space-y-3 transition-all duration-200 shadow-sm hover:shadow-md">
+    <div class="bg-white hover:-translate-x-0.5 hover:-translate-y-0.5 border-2 border-[#151515] shadow-[4px_4px_0px_#151515] hover:shadow-[6px_6px_0px_#151515] rounded-2xl p-5 flex flex-col justify-between space-y-3 transition-all duration-200">
       <div>
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="text-xs font-black px-2.5 py-0.5 rounded-lg bg-[#4ade80] text-[#151515] border-2 border-[#151515] shadow-[1px_1px_0px_#151515]">
             ${item.context}
           </span>
-          <button onclick="toggleSpeak('${item.en.replace(/'/g, "\\'")}', this)" class="p-2 rounded-lg bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white transition-colors border border-transparent" title="Bấm nghe phát âm, bấm lần nữa để dừng">
-            <i class="fa-solid fa-volume-high text-xs"></i>
+          <button onclick="toggleSpeak('${item.en.replace(/'/g, "\\'")}', this)" class="p-2 rounded-xl bg-white hover:bg-[#f4d77c] text-[#151515] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] transition" title="Bấm nghe phát âm, bấm lần nữa để dừng">
+            <i class="fa-solid fa-volume-high text-xs text-[#5294ff]"></i>
           </button>
         </div>
-        <p class="text-sm font-semibold text-white leading-relaxed font-['JetBrains_Mono']">"${item.en}"</p>
-        <p class="text-xs text-slate-400 mt-2 italic bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+        <p class="text-sm font-black text-[#151515] leading-relaxed font-['JetBrains_Mono']">"${item.en}"</p>
+        <p class="text-xs text-[#151515] mt-2 italic bg-[#f8fafc] p-2.5 rounded-xl border-2 border-[#151515] font-medium">
           👉 ${item.vi}
         </p>
       </div>
 
-      <div class="flex items-center justify-between pt-2 border-t border-slate-800/60">
-        <button onclick="speakText('${item.en.replace(/'/g, "\\'")}')" class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 font-medium">
-          <i class="fa-solid fa-play text-[10px]"></i> Luyện nói câu này
+      <div class="flex items-center justify-between pt-2 border-t-2 border-[#151515]">
+        <button onclick="toggleSpeak('${item.en.replace(/'/g, "\\'")}', this)" class="text-xs text-[#151515] font-black hover:underline flex items-center gap-1.5">
+          <i class="fa-solid fa-play text-[10px] text-[#5294ff]"></i> Luyện nói câu này
         </button>
-        <button onclick="navigator.clipboard.writeText('${item.en.replace(/'/g, "\\'")}'); alert('Đã sao chép câu vào clipboard!')" class="text-xs text-slate-500 hover:text-slate-300">
+        <button onclick="navigator.clipboard.writeText('${item.en.replace(/'/g, "\\'")}'); alert('Đã sao chép câu vào clipboard!')" class="text-xs font-bold text-[#151515] bg-white border-2 border-[#151515] shadow-[1px_1px_0px_#151515] px-2 py-0.5 rounded-lg hover:bg-[#f4d77c] transition">
           <i class="fa-regular fa-copy"></i> Copy
         </button>
       </div>
@@ -642,9 +642,10 @@ function renderPhrases(filter = 'all') {
 }
 
 function filterPhrases(category) {
-  document.querySelectorAll('.phrase-filter').forEach(btn => btn.classList.remove('active', 'bg-indigo-600', 'text-white'));
+  currentPhraseFilter = category;
+  document.querySelectorAll('.phrase-filter').forEach(btn => btn.classList.remove('active'));
   if (event && event.target) {
-    event.target.classList.add('active', 'bg-indigo-600', 'text-white');
+    event.target.classList.add('active');
   }
   renderPhrases(category);
 }
@@ -751,6 +752,7 @@ async function requestNewQuestion() {
 }
 
 // ----------------------------------------------------
+// ----------------------------------------------------
 // Gen Câu Gợi Ý & Dàn Ý Trả Lời (AI Hint Generator)
 // ----------------------------------------------------
 async function requestQuestionHint() {
@@ -762,8 +764,8 @@ async function requestQuestionHint() {
   const hintBox = document.getElementById('question-hint-box');
   hintBox.classList.remove('hidden');
   hintBox.innerHTML = `
-    <div class="py-4 text-center text-amber-300 text-xs flex items-center justify-center gap-2">
-      <i class="fa-solid fa-brain fa-bounce text-sm"></i>
+    <div class="py-4 text-center text-[#151515] font-black text-xs flex items-center justify-center gap-2">
+      <i class="fa-solid fa-brain fa-bounce text-sm text-[#5294ff]"></i>
       <span>9Router AI đang soạn dàn ý & mẫu câu trả lời chuẩn...</span>
     </div>
   `;
@@ -782,60 +784,60 @@ async function requestQuestionHint() {
       const h = data.data;
       hintBox.innerHTML = `
         <div class="space-y-3">
-          <div class="flex items-center justify-between border-b border-amber-500/20 pb-2">
-            <span class="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
-              <i class="fa-solid fa-lightbulb"></i> Gợi ý trả lời & Dàn ý chuyên môn
+          <div class="flex items-center justify-between border-b-2 border-[#151515] pb-2">
+            <span class="text-xs font-black text-[#151515] uppercase tracking-wide flex items-center gap-1.5">
+              <i class="fa-solid fa-lightbulb text-amber-500"></i> Gợi ý trả lời & Dàn ý chuyên môn
             </span>
-            <button onclick="document.getElementById('question-hint-box').classList.add('hidden')" class="text-xs text-slate-400 hover:text-white px-2 py-0.5 rounded hover:bg-slate-800">
+            <button onclick="document.getElementById('question-hint-box').classList.add('hidden')" class="text-xs font-bold text-[#151515] bg-white border-2 border-[#151515] px-2 py-0.5 rounded-lg shadow-[1px_1px_0px_#151515] hover:bg-rose-100">
               <i class="fa-solid fa-xmark"></i> Đóng
             </button>
           </div>
 
           <!-- Keywords -->
           <div>
-            <p class="text-[11px] font-bold text-amber-300 uppercase tracking-wider mb-1.5">Từ khóa chuyên môn nên nói:</p>
+            <p class="text-[11px] font-black text-[#151515] uppercase tracking-wider mb-1.5">Từ khóa chuyên môn nên nói:</p>
             <div class="flex flex-wrap gap-1.5">
-              ${(h.key_keywords || []).map(kw => `<span class="px-2.5 py-0.5 rounded-md text-xs bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono font-medium">${kw}</span>`).join('')}
+              ${(h.key_keywords || []).map(kw => `<span class="px-2.5 py-0.5 rounded-lg text-xs bg-[#f4d77c] border-2 border-[#151515] shadow-[1px_1px_0px_#151515] text-[#151515] font-mono font-black">${kw}</span>`).join('')}
             </div>
           </div>
 
           <!-- Steps outline -->
           <div>
-            <p class="text-[11px] font-bold text-amber-300 uppercase tracking-wider mb-1">Dàn ý trả lời 3 bước:</p>
-            <ul class="text-xs text-slate-200 space-y-1 list-disc pl-4">
+            <p class="text-[11px] font-black text-[#151515] uppercase tracking-wider mb-1">Dàn ý trả lời 3 bước:</p>
+            <ul class="text-xs text-[#151515] space-y-1 list-disc pl-4 font-semibold">
               ${(h.outline_steps || []).map(step => `<li>${step}</li>`).join('')}
             </ul>
           </div>
 
           <!-- Starter Template -->
-          <div class="p-3 bg-slate-900/90 rounded-xl border border-amber-500/30 space-y-2">
+          <div class="p-3 bg-[#f8fafc] rounded-xl border-2 border-[#151515] space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-                <i class="fa-solid fa-bullhorn"></i> Mẫu câu trả lời gợi ý (Starter Template):
+              <span class="text-[11px] font-black text-[#151515] uppercase tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-bullhorn text-[#5294ff]"></i> Mẫu câu trả lời gợi ý (Starter Template):
               </span>
-              <button onclick="toggleSpeak('${h.starter_template_en.replace(/'/g, "\\'")}', this)" class="text-[11px] text-indigo-400 hover:text-indigo-200 flex items-center gap-1" title="Bấm nghe, bấm lần nữa để dừng">
-                <i class="fa-solid fa-volume-high"></i> <span>Nghe đọc mẫu</span>
+              <button onclick="toggleSpeak('${h.starter_template_en.replace(/'/g, "\\'")}', this)" class="text-[11px] font-bold text-[#151515] bg-white border border-[#151515] shadow-[1px_1px_0px_#151515] px-2 py-0.5 rounded hover:bg-[#f4d77c] flex items-center gap-1" title="Bấm nghe, bấm lần nữa để dừng">
+                <i class="fa-solid fa-volume-high text-[#5294ff]"></i> <span>Nghe đọc mẫu</span>
               </button>
             </div>
-            <p class="text-xs text-slate-100 font-['JetBrains_Mono'] italic bg-slate-950/70 p-2 rounded border border-slate-800">
+            <p class="text-xs text-[#151515] font-['JetBrains_Mono'] italic bg-white p-2.5 rounded-lg border-2 border-[#151515] font-semibold">
               "${h.starter_template_en}"
             </p>
-            <p class="text-xs text-slate-400 italic">👉 <b>Dịch nghĩa:</b> ${h.starter_template_vi}</p>
+            <p class="text-xs text-[#151515] italic font-medium">👉 <b>Dịch nghĩa:</b> ${h.starter_template_vi}</p>
           </div>
 
           <div class="flex items-center justify-end gap-2 pt-1">
-            <button onclick="insertTemplateToAnswer('${h.starter_template_en.replace(/'/g, "\\'")}')" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1.5 shadow-md active:scale-95 transition-all">
+            <button onclick="insertTemplateToAnswer('${h.starter_template_en.replace(/'/g, "\\'")}')" class="px-3.5 py-1.5 bg-[#4ade80] hover:bg-[#22c55e] text-[#151515] font-black text-xs rounded-xl border-2 border-[#151515] shadow-[2px_2px_0px_#151515] flex items-center gap-1.5 active:scale-95 transition-all">
               <i class="fa-solid fa-arrow-down"></i> Chèn vào ô trả lời để luyện nói
             </button>
           </div>
         </div>
       `;
     } else {
-      hintBox.innerHTML = `<div class="text-xs text-rose-400">Không thể tạo gợi ý lúc này. Vui lòng thử lại.</div>`;
+      hintBox.innerHTML = `<div class="text-xs text-rose-600 font-bold">Không thể tạo gợi ý lúc này. Vui lòng thử lại.</div>`;
     }
   } catch (err) {
     console.error(err);
-    hintBox.innerHTML = `<div class="text-xs text-rose-400">Lỗi kết nối khi tạo gợi ý.</div>`;
+    hintBox.innerHTML = `<div class="text-xs text-rose-600 font-bold">Lỗi kết nối khi tạo gợi ý.</div>`;
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalHtml;
@@ -866,9 +868,9 @@ async function submitAnswerForEvaluation() {
   const evalContainer = document.getElementById('evaluation-result');
   evalContainer.classList.remove('hidden');
   evalContainer.innerHTML = `
-    <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 text-center py-10 space-y-3">
-      <i class="fa-solid fa-brain fa-bounce text-3xl text-indigo-400"></i>
-      <p class="text-sm font-semibold text-slate-300">9Router AI đang phân tích ngữ pháp, từ vựng và kiến thức kỹ thuật DevOps...</p>
+    <div class="bg-white p-6 rounded-2xl border-2 border-[#151515] shadow-[4px_4px_0px_#151515] text-center py-10 space-y-3">
+      <i class="fa-solid fa-brain fa-bounce text-3xl text-[#5294ff]"></i>
+      <p class="text-sm font-black text-[#151515]">9Router AI đang phân tích ngữ pháp, từ vựng và kiến thức kỹ thuật DevOps...</p>
     </div>
   `;
 
@@ -886,11 +888,11 @@ async function submitAnswerForEvaluation() {
       renderEvaluationResult(data.data);
       loadProgressData();
     } else {
-      evalContainer.innerHTML = `<div class="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-xl">Lỗi chấm điểm: ${data.error || 'Vui lòng thử lại.'}</div>`;
+      evalContainer.innerHTML = `<div class="p-4 bg-rose-100 border-2 border-[#151515] text-rose-700 font-bold rounded-xl">Lỗi chấm điểm: ${data.error || 'Vui lòng thử lại.'}</div>`;
     }
   } catch (err) {
     console.error(err);
-    evalContainer.innerHTML = `<div class="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-xl">Lỗi kết nối tới AI backend.</div>`;
+    evalContainer.innerHTML = `<div class="p-4 bg-rose-100 border-2 border-[#151515] text-rose-700 font-bold rounded-xl">Lỗi kết nối tới AI backend.</div>`;
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalHtml;
@@ -900,67 +902,67 @@ async function submitAnswerForEvaluation() {
 function renderEvaluationResult(evalData) {
   const evalContainer = document.getElementById('evaluation-result');
   const score = evalData.score || 7;
-  const scoreColor = score >= 8 ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : (score >= 6 ? 'text-amber-400 border-amber-500/30 bg-amber-500/10' : 'text-rose-400 border-rose-500/30 bg-rose-500/10');
+  const scoreBg = score >= 8 ? 'bg-[#4ade80]' : (score >= 6 ? 'bg-[#f4d77c]' : 'bg-rose-200');
 
   evalContainer.innerHTML = `
-    <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
+    <div class="bg-white border-2 border-[#151515] shadow-[4px_4px_0px_#151515] rounded-2xl p-6 space-y-6">
       <!-- Header Score -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-[#151515]">
         <div>
-          <h3 class="text-lg font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-chart-simple text-indigo-400"></i> Đánh Giá Từ Tech Lead Phỏng Vấn
+          <h3 class="text-lg font-black text-[#151515] flex items-center gap-2">
+            <i class="fa-solid fa-chart-simple text-[#5294ff]"></i> Đánh Giá Từ Tech Lead Phỏng Vấn
           </h3>
-          <p class="text-xs text-slate-400 mt-1">${evalData.summary_vi || 'Nhận xét chi tiết câu trả lời của bạn.'}</p>
+          <p class="text-xs font-semibold text-slate-600 mt-1">${evalData.summary_vi || 'Nhận xét chi tiết câu trả lời của bạn.'}</p>
         </div>
         <div class="flex items-center space-x-3">
-          <div class="px-4 py-2 rounded-2xl border text-center ${scoreColor}">
-            <div class="text-2xl font-black">${score}<span class="text-xs font-normal text-slate-400">/10</span></div>
-            <div class="text-[10px] font-bold uppercase tracking-wider">Interview Score</div>
+          <div class="px-4 py-2 rounded-2xl border-2 border-[#151515] shadow-[3px_3px_0px_#151515] text-center ${scoreBg}">
+            <div class="text-2xl font-black text-[#151515]">${score}<span class="text-xs font-bold text-[#151515]">/10</span></div>
+            <div class="text-[10px] font-black uppercase tracking-wider text-[#151515]">Interview Score</div>
           </div>
         </div>
       </div>
 
       <!-- Strengths & Improvements Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-emerald-950/20 border border-emerald-500/20 p-4 rounded-xl space-y-2">
-          <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+        <div class="bg-[#f0fdf4] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] p-4 rounded-xl space-y-2">
+          <div class="flex items-center gap-2 text-emerald-800 text-xs font-black uppercase tracking-wider">
             <i class="fa-solid fa-circle-check"></i> Điểm tốt (Strengths)
           </div>
-          <p class="text-xs text-slate-200 leading-relaxed">${evalData.strengths_en || 'Good effort expressing your ideas.'}</p>
+          <p class="text-xs text-[#151515] font-medium leading-relaxed">${evalData.strengths_en || 'Good effort expressing your ideas.'}</p>
         </div>
 
-        <div class="bg-amber-950/20 border border-amber-500/20 p-4 rounded-xl space-y-2">
-          <div class="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
+        <div class="bg-[#fffbeb] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] p-4 rounded-xl space-y-2">
+          <div class="flex items-center gap-2 text-amber-800 text-xs font-black uppercase tracking-wider">
             <i class="fa-solid fa-wand-magic-sparkles"></i> Góp ý ngữ pháp & Từ vựng
           </div>
-          <p class="text-xs text-slate-200 leading-relaxed">${evalData.improvements?.grammar_pronunciation_vi || 'Xem câu trả lời mẫu bên dưới để cải thiện câu từ.'}</p>
+          <p class="text-xs text-[#151515] font-medium leading-relaxed">${evalData.improvements?.grammar_pronunciation_vi || 'Xem câu trả lời mẫu bên dưới để cải thiện câu từ.'}</p>
         </div>
       </div>
 
       <!-- Technical Accuracy -->
       ${evalData.improvements?.technical_feedback_vi ? `
-        <div class="bg-indigo-950/20 border border-indigo-500/20 p-4 rounded-xl space-y-1.5">
-          <div class="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
+        <div class="bg-[#eff6ff] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] p-4 rounded-xl space-y-1.5">
+          <div class="flex items-center gap-2 text-[#5294ff] text-xs font-black uppercase tracking-wider">
             <i class="fa-solid fa-code"></i> Nhận xét kỹ thuật DevOps
           </div>
-          <p class="text-xs text-slate-200 leading-relaxed">${evalData.improvements.technical_feedback_vi}</p>
+          <p class="text-xs text-[#151515] font-medium leading-relaxed">${evalData.improvements.technical_feedback_vi}</p>
         </div>
       ` : ''}
 
       <!-- Model Answer -->
-      <div class="bg-slate-950 p-5 rounded-xl border border-indigo-500/30 space-y-3">
+      <div class="bg-[#fffbeb] p-5 rounded-xl border-2 border-[#151515] shadow-[3px_3px_0px_#151515] space-y-3">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-star text-amber-400"></i> Câu trả lời mẫu chuẩn Senior (Model Answer)
+          <span class="text-xs font-black text-[#151515] uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-star text-amber-500"></i> Câu trả lời mẫu chuẩn Senior (Model Answer)
           </span>
-          <button onclick="toggleSpeak('${evalData.model_answer_en.replace(/'/g, "\\'")}', this)" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all shadow-sm border border-transparent" title="Bấm nghe, bấm lần nữa để dừng">
+          <button onclick="toggleSpeak('${evalData.model_answer_en.replace(/'/g, "\\'")}', this)" class="px-3.5 py-1.5 bg-[#5294ff] hover:bg-[#3b82f6] text-[#151515] text-xs font-black rounded-xl border-2 border-[#151515] shadow-[2px_2px_0px_#151515] flex items-center gap-1.5 transition active:scale-95" title="Bấm nghe, bấm lần nữa để dừng">
             <i class="fa-solid fa-volume-high"></i> <span>Nghe phát âm mẫu</span>
           </button>
         </div>
-        <p class="text-sm font-semibold text-slate-100 font-['JetBrains_Mono'] leading-relaxed bg-slate-900/80 p-3 rounded-lg border border-slate-800">
+        <p class="text-sm font-black text-[#151515] font-['JetBrains_Mono'] leading-relaxed bg-white p-3 rounded-lg border-2 border-[#151515]">
           "${evalData.model_answer_en}"
         </p>
-        <p class="text-xs text-slate-400 italic">
+        <p class="text-xs text-slate-700 italic font-medium">
           👉 <b>Dịch nghĩa:</b> ${evalData.model_answer_vi}
         </p>
       </div>
@@ -1122,8 +1124,8 @@ function renderChatChips(chips) {
   }
 
   chipsContainer.innerHTML = chips.map(c => `
-    <button onclick="useQuickPrompt('${c.replace(/'/g, "\\'")}')" class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600/30 border border-slate-800 hover:border-indigo-500/50 text-slate-300 hover:text-indigo-200 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 shrink-0">
-      <i class="fa-regular fa-comment-dots text-indigo-400 text-[10px]"></i>
+    <button onclick="useQuickPrompt('${c.replace(/'/g, "\\'")}')" class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-white hover:bg-[#f4d77c] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] font-bold text-xs transition flex items-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#151515] shrink-0">
+      <i class="fa-regular fa-comment-dots text-[#5294ff] text-[11px]"></i>
       <span>${c}</span>
     </button>
   `).join('');
@@ -1194,15 +1196,15 @@ function appendChatMessage(role, content) {
   const cleanSpeech = content.replace(/[#*`_>\[\]]/g, '').replace(/\n+/g, ' ');
 
   msgDiv.innerHTML = `
-    <div class="w-8 h-8 rounded-full ${isUser ? 'bg-emerald-600/30 border border-emerald-500/30 text-emerald-400' : 'bg-indigo-600/30 border border-indigo-500/30 text-indigo-400'} flex items-center justify-center text-xs shrink-0 mt-1 shadow-sm">
+    <div class="w-8 h-8 rounded-xl ${isUser ? 'bg-[#4ade80]' : 'bg-[#5294ff]'} border-2 border-[#151515] shadow-[1px_1px_0px_#151515] flex items-center justify-center text-xs shrink-0 mt-1 text-[#151515]">
       <i class="fa-solid ${isUser ? 'fa-user' : 'fa-robot'}"></i>
     </div>
-    <div class="${isUser ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-md' : 'bg-slate-900/90 text-slate-200 rounded-2xl rounded-tl-none border border-slate-800/90 p-4 shadow-md chat-markdown'} text-sm max-w-[85%] leading-relaxed">
+    <div class="${isUser ? 'bg-[#5294ff] text-[#151515] rounded-2xl rounded-tr-none font-bold' : 'bg-[#f8fafc] text-[#151515] rounded-2xl rounded-tl-none font-normal chat-markdown'} border-2 border-[#151515] shadow-[3px_3px_0px_#151515] p-4 text-sm max-w-[85%] leading-relaxed">
       ${formattedContent}
       ${!isUser ? `
-        <div class="mt-3 pt-2 border-t border-slate-800/80 flex justify-end">
-          <button onclick="toggleSpeak('${cleanSpeech.replace(/'/g, "\\'")}', this)" class="text-[11px] text-slate-400 hover:text-indigo-300 flex items-center gap-1.5 transition-colors border border-transparent px-2 py-0.5 rounded" title="Bấm nghe, bấm lần nữa để dừng">
-            <i class="fa-solid fa-volume-high text-[10px]"></i> <span>Nghe phát âm</span>
+        <div class="mt-3 pt-2 border-t-2 border-[#151515] flex justify-end">
+          <button onclick="toggleSpeak('${cleanSpeech.replace(/'/g, "\\'")}', this)" class="text-xs font-bold text-[#151515] bg-white border-2 border-[#151515] shadow-[1px_1px_0px_#151515] hover:bg-[#f4d77c] px-2.5 py-0.5 rounded-lg flex items-center gap-1.5 transition" title="Bấm nghe, bấm lần nữa để dừng">
+            <i class="fa-solid fa-volume-high text-[#5294ff]"></i> <span>Nghe phát âm</span>
           </button>
         </div>
       ` : ''}
@@ -1220,10 +1222,10 @@ function clearChatHistory() {
   chatHistory = [{ role: 'assistant', content: config.welcome }];
   document.getElementById('chat-messages').innerHTML = `
     <div class="flex items-start space-x-3">
-      <div class="w-8 h-8 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xs shrink-0">
+      <div class="w-8 h-8 rounded-xl bg-[#5294ff] border-2 border-[#151515] shadow-[1px_1px_0px_#151515] flex items-center justify-center text-white text-xs shrink-0">
         <i class="fa-solid fa-robot"></i>
       </div>
-      <div class="bg-slate-900 p-3.5 rounded-2xl rounded-tl-none border border-slate-800 text-sm max-w-[85%] text-slate-200 chat-markdown">
+      <div class="bg-[#f8fafc] p-4 rounded-2xl rounded-tl-none border-2 border-[#151515] shadow-[3px_3px_0px_#151515] text-sm max-w-[85%] text-[#151515] chat-markdown">
         ${typeof marked !== 'undefined' ? marked.parse(config.welcome) : config.welcome}
       </div>
     </div>
