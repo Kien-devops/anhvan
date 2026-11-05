@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: anhvan
+  labels:
+    app.kubernetes.io/name: anhvan
+    environment: production
