@@ -38,7 +38,10 @@ spec:
             - name: ROUTER_URL
               value: "https://9router.onprem.site/v1"
             - name: ROUTER_KEY
-              value: "sk-a7e6ec7fa26ceade-ii35lw-eb70a6ee"
+              valueFrom:
+                secretKeyRef:
+                  name: anhvan-secrets
+                  key: router-key
             - name: ROUTER_MODEL
               value: "gpt-5.6-sol"
             - name: NODE_ENV
