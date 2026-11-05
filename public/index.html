@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-['Plus_Jakarta_Sans'] antialiased selection:bg-indigo-500 selection:text-white">
@@ -101,20 +102,39 @@
 
     <!-- 2. TAB: WORKPLACE PHRASES -->
     <section id="view-phrases" class="tab-content hidden space-y-6">
-      <div class="bg-slate-900/40 p-5 rounded-2xl border border-slate-800">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-briefcase text-emerald-400"></i> DevOps Workplace Communication
-        </h2>
-        <p class="text-sm text-slate-400 mt-1">Các mẫu câu nói tiếng Anh chuẩn mực khi làm việc trong team công nghệ, báo cáo Daily Standup, xử lý sự cố (Incidents), và review code.</p>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/40 p-5 rounded-2xl border border-slate-800">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-briefcase text-emerald-400"></i> DevOps Workplace Communication
+          </h2>
+          <p class="text-sm text-slate-400 mt-1">Các mẫu câu nói tiếng Anh chuẩn mực khi làm việc trong team công nghệ, báo cáo Daily Standup, xử lý sự cố (Incidents), và review code.</p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <select id="phrase-gen-category" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500">
+            <option value="standup">Daily Standup</option>
+            <option value="incident">Incident & Troubleshooting</option>
+            <option value="pr_review">PR & Code Review</option>
+            <option value="blocker">Báo Cáo Blocker</option>
+            <option value="architecture">Kiến Trúc & System Design</option>
+          </select>
+          <button onclick="generateAIPhrases()" id="btn-gen-phrases" class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-medium text-sm rounded-xl shadow-lg shadow-emerald-500/25 flex items-center gap-2 transition-all active:scale-95">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>AI Gen Mẫu Câu Mới</span>
+          </button>
+          <button onclick="resetDefaultPhrases()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors" title="Khôi phục mẫu câu mặc định">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+        </div>
       </div>
 
       <!-- Category Filter -->
       <div class="flex flex-wrap gap-2">
-        <button onclick="filterPhrases('all')" class="phrase-filter active px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Tất cả</button>
+        <button onclick="filterPhrases('all')" class="phrase-filter active px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white">Tất cả</button>
         <button onclick="filterPhrases('standup')" class="phrase-filter px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Daily Standup</button>
         <button onclick="filterPhrases('incident')" class="phrase-filter px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Incident & Troubleshooting</button>
         <button onclick="filterPhrases('pr_review')" class="phrase-filter px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">PR & Code Review</button>
         <button onclick="filterPhrases('blocker')" class="phrase-filter px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Báo cáo Blocker / Nhờ hỗ trợ</button>
+        <button onclick="filterPhrases('architecture')" class="phrase-filter px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Kiến Trúc & Design</button>
       </div>
 
       <div id="phrases-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -125,7 +145,7 @@
     <!-- 3. TAB: MOCK INTERVIEW -->
     <section id="view-interview" class="tab-content hidden space-y-6">
       <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 p-6 rounded-2xl border border-indigo-500/20 shadow-xl">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <span class="inline-block px-2.5 py-1 rounded-md bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-2">
               Mock Technical Interview
@@ -133,7 +153,7 @@
             <h2 class="text-2xl font-black text-white">Luyện Phỏng Vấn DevOps / Cloud Internship</h2>
             <p class="text-sm text-slate-300 mt-1">AI Tech Lead sẽ hỏi bạn câu hỏi thực tế bằng tiếng Anh. Bạn có thể nói bằng Mic hoặc gõ phím để AI chấm điểm và sửa lỗi!</p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 flex-wrap">
             <select id="interview-topic" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500">
               <option value="Kubernetes & Container Orchestration">Kubernetes & Pod Lifecycle</option>
               <option value="CI/CD Pipeline & GitHub Actions">CI/CD & GitHub Actions</option>
@@ -141,7 +161,13 @@
               <option value="Linux System & Networking Troubleshooting">Linux & Networking</option>
               <option value="DevOps Culture & Soft Skills">Văn hóa DevOps & Xử lý tình huống</option>
             </select>
-            <button onclick="requestNewQuestion()" id="btn-new-question" class="px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-2 transition-all">
+            <select id="interview-style" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500">
+              <option value="scenario">Tình huống thực tế (Scenario / Debug)</option>
+              <option value="core">Khái niệm cốt lõi (Core Concepts)</option>
+              <option value="project">Hỏi về Dự án Homelab / Kinh nghiệm</option>
+              <option value="behavioral">Câu hỏi tình huống (Behavioral / Soft skill)</option>
+            </select>
+            <button onclick="requestNewQuestion()" id="btn-new-question" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-2 transition-all active:scale-95">
               <i class="fa-solid fa-arrows-rotate"></i>
               <span>Lấy câu hỏi mới</span>
             </button>
@@ -260,3 +286,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+

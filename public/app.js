@@ -258,23 +258,46 @@ const WORKPLACE_PHRASES = [
     en: "I've hit a roadblock with the database migration script. Do you have 10 minutes for a quick huddle to sanity check this?",
     vi: "Mình đang gặp chút khó khăn với script migration database. Bạn có rảnh 10 phút để trao đổi nhanh rà soát lại giúp mình không?",
     context: "Asking for Guidance (Xin trợ giúp từ Senior)"
+  },
+  {
+    category: "architecture",
+    en: "To decouple the services and prevent cascading timeouts, I recommend introducing an asynchronous message queue between the ingest and processing layers.",
+    vi: "Để tách rời các service và tránh nghẽn timeout dây chuyền, mình đề xuất bổ sung hàng đợi message bất đồng bộ giữa tầng ingest và xử lý dữ liệu.",
+    context: "Architecture Discussion (Đề xuất thiết kế hệ thống)"
   }
 ];
 
+let currentPhrasesList = [...WORKPLACE_PHRASES];
+let currentPhraseFilter = 'all';
+
 function renderPhrases(filter = 'all') {
+  currentPhraseFilter = filter;
   const container = document.getElementById('phrases-container');
   const filtered = filter === 'all' 
-    ? WORKPLACE_PHRASES 
-    : WORKPLACE_PHRASES.filter(p => p.category === filter);
+    ? currentPhrasesList 
+    : currentPhrasesList.filter(p => p.category === filter);
+
+  if (!filtered || filtered.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full py-12 text-center text-slate-400 bg-slate-900/30 rounded-2xl border border-slate-800">
+        <i class="fa-solid fa-comments text-2xl text-slate-500 mb-2"></i>
+        <p class="text-sm">Chưa có mẫu câu nào cho danh mục này.</p>
+        <button onclick="generateAIPhrases()" class="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl">
+          <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Bấm để AI sinh mẫu câu ngay
+        </button>
+      </div>
+    `;
+    return;
+  }
 
   container.innerHTML = filtered.map(item => `
-    <div class="bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 rounded-2xl p-5 flex flex-col justify-between space-y-3 transition-all">
+    <div class="bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800 hover:border-emerald-500/40 rounded-2xl p-5 flex flex-col justify-between space-y-3 transition-all duration-200 shadow-sm hover:shadow-md">
       <div>
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
             ${item.context}
           </span>
-          <button onclick="speakText('${item.en.replace(/'/g, "\\'")}')" class="p-2 rounded-lg bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white transition-colors" title="Nghe câu này">
+          <button onclick="speakText('${item.en.replace(/'/g, "\\'")}')" class="p-2 rounded-lg bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white transition-colors" title="Nghe phát âm">
             <i class="fa-solid fa-volume-high text-xs"></i>
           </button>
         </div>
@@ -298,31 +321,78 @@ function renderPhrases(filter = 'all') {
 
 function filterPhrases(category) {
   document.querySelectorAll('.phrase-filter').forEach(btn => btn.classList.remove('active', 'bg-indigo-600', 'text-white'));
-  event.target.classList.add('active', 'bg-indigo-600', 'text-white');
+  if (event && event.target) {
+    event.target.classList.add('active', 'bg-indigo-600', 'text-white');
+  }
   renderPhrases(category);
+}
+
+async function generateAIPhrases() {
+  const category = document.getElementById('phrase-gen-category').value;
+  const btn = document.getElementById('btn-gen-phrases');
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>AI đang soạn mẫu câu...</span>`;
+
+  try {
+    const res = await fetch('/api/phrases/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: category, count: 3 })
+    });
+    const data = await res.json();
+    if (data.success && data.data) {
+      currentPhrasesList = [...data.data, ...currentPhrasesList];
+      renderPhrases(currentPhraseFilter);
+    } else {
+      alert("Không thể gen mẫu câu: " + (data.error || 'Vui lòng thử lại.'));
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Lỗi kết nối tới AI backend.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
+}
+
+function resetDefaultPhrases() {
+  currentPhrasesList = [...WORKPLACE_PHRASES];
+  renderPhrases(currentPhraseFilter);
 }
 
 // ----------------------------------------------------
 // 5. AI Mock Interviewer
 // ----------------------------------------------------
 let currentInterviewQuestion = "What is the difference between a Pod and a Deployment in Kubernetes, and when would you use a Deployment?";
+let askedInterviewQuestions = [currentInterviewQuestion];
 
 async function requestNewQuestion() {
   const topic = document.getElementById('interview-topic').value;
+  const styleEl = document.getElementById('interview-style');
+  const style = styleEl ? styleEl.value : 'scenario';
+  
   const btn = document.getElementById('btn-new-question');
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang chuẩn bị câu hỏi...</span>`;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang đổi câu hỏi mới...</span>`;
 
   try {
     const res = await fetch('/api/interview/question', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic: topic, level: 'Intern/Fresher' })
+      body: JSON.stringify({ 
+        topic: topic, 
+        level: 'Intern/Junior',
+        interviewStyle: style,
+        previousQuestions: askedInterviewQuestions.slice(-10)
+      })
     });
     const data = await res.json();
-    if (data.success && data.data) {
+    if (data.success && data.data && data.data.question) {
       currentInterviewQuestion = data.data.question;
+      askedInterviewQuestions.push(currentInterviewQuestion);
+
       document.getElementById('interview-question-text').innerText = `"${data.data.question}"`;
       document.getElementById('q-topic-badge').innerText = data.data.topic || topic;
       document.getElementById('q-difficulty-badge').innerText = data.data.difficulty || 'Medium';
@@ -341,6 +411,8 @@ async function requestNewQuestion() {
 
       // Auto pronounce new question
       speakText(data.data.question);
+    } else {
+      alert("Không thể đổi câu hỏi: " + (data.error || 'Vui lòng thử lại.'));
     }
   } catch (err) {
     console.error(err);
@@ -512,16 +584,26 @@ function appendChatMessage(role, content) {
   const msgDiv = document.createElement('div');
   msgDiv.className = `flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
 
+  let formattedContent = '';
+  if (!isUser && typeof marked !== 'undefined') {
+    formattedContent = marked.parse(content);
+  } else {
+    formattedContent = `<p class="whitespace-pre-wrap">${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`;
+  }
+
+  // Clean raw speech text for text-to-speech
+  const cleanSpeech = content.replace(/[#*`_>\[\]]/g, '').replace(/\n+/g, ' ');
+
   msgDiv.innerHTML = `
-    <div class="w-8 h-8 rounded-full ${isUser ? 'bg-emerald-600/30 border border-emerald-500/30 text-emerald-400' : 'bg-indigo-600/30 border border-indigo-500/30 text-indigo-400'} flex items-center justify-center text-xs shrink-0">
+    <div class="w-8 h-8 rounded-full ${isUser ? 'bg-emerald-600/30 border border-emerald-500/30 text-emerald-400' : 'bg-indigo-600/30 border border-indigo-500/30 text-indigo-400'} flex items-center justify-center text-xs shrink-0 mt-1 shadow-sm">
       <i class="fa-solid ${isUser ? 'fa-user' : 'fa-robot'}"></i>
     </div>
-    <div class="${isUser ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-900 text-slate-200 rounded-tl-none border border-slate-800'} p-3.5 rounded-2xl text-sm max-w-[85%] leading-relaxed">
-      ${content}
+    <div class="${isUser ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-md' : 'bg-slate-900/90 text-slate-200 rounded-2xl rounded-tl-none border border-slate-800/90 p-4 shadow-md chat-markdown'} text-sm max-w-[85%] leading-relaxed">
+      ${formattedContent}
       ${!isUser ? `
-        <div class="mt-2 pt-2 border-t border-slate-800/80 flex justify-end">
-          <button onclick="speakText('${content.replace(/'/g, "\\'")}')" class="text-[11px] text-slate-400 hover:text-indigo-300 flex items-center gap-1">
-            <i class="fa-solid fa-volume-high"></i> Nghe
+        <div class="mt-3 pt-2 border-t border-slate-800/80 flex justify-end">
+          <button onclick="speakText('${cleanSpeech.replace(/'/g, "\\'")}')" class="text-[11px] text-slate-400 hover:text-indigo-300 flex items-center gap-1.5 transition-colors">
+            <i class="fa-solid fa-volume-high text-[10px]"></i> Nghe phát âm
           </button>
         </div>
       ` : ''}
@@ -553,3 +635,4 @@ window.addEventListener('DOMContentLoaded', () => {
   loadDefaultVocab();
   renderPhrases('all');
 });
+

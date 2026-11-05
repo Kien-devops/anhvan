@@ -142,28 +142,94 @@ Return ONLY a valid JSON array of objects with the following schema, with NO mar
   }
 });
 
-// 2. Mock Interview Question Generation
+// 2. Generate Workplace Communication Phrases
+app.post('/api/phrases/generate', async (req, res) => {
+  try {
+    const { category = 'standup', count = 3 } = req.body;
+    const prompt = `You are an expert English communication coach for DevOps engineers and Cloud architects.
+Generate ${count} realistic, professional English workplace communication phrases for the category: "${category}".
+(Categories: standup = Daily Standup, incident = Outage & Troubleshooting, pr_review = Code / PR Review, blocker = Raising Blockers & Asking for Help, architecture = System Architecture & Technical Discussions).
+
+Return ONLY a valid JSON array of objects with the following schema, with NO markdown backticks or extra text:
+[
+  {
+    "category": "${category}",
+    "en": "Authentic English sentence spoken by engineers in international tech companies.",
+    "vi": "Bản dịch nghĩa tiếng Việt tự nhiên và chuẩn chuyên môn IT.",
+    "context": "Mô tả ngắn gọn ngữ cảnh sử dụng (vd: Báo cáo blocker, Đề xuất rollback, Góp ý review PR...)"
+  }
+]`;
+
+    const raw = await callLLM([
+      { role: "system", content: "You output only clean raw JSON arrays." },
+      { role: "user", content: prompt }
+    ], 0.85);
+
+    let clean = raw.trim();
+    if (clean.startsWith('```json')) clean = clean.slice(7);
+    if (clean.startsWith('```')) clean = clean.slice(3);
+    if (clean.endsWith('```')) clean = clean.slice(0, -3);
+
+    const parsed = JSON.parse(clean.trim());
+    res.json({ success: true, data: parsed });
+  } catch (error) {
+    console.error('Error generating phrases:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 3. Mock Interview Question Generation
 app.post('/api/interview/question', async (req, res) => {
   try {
-    const { topic = 'Kubernetes', level = 'Intern/Fresher' } = req.body;
-    const prompt = `You are a Technical Lead conducting a mock interview in English for a DevOps/Cloud Internship candidate.
-Topic: "${topic}"
-Target Candidate Level: "${level}"
+    const { 
+      topic = 'Kubernetes', 
+      level = 'Intern/Fresher',
+      interviewStyle = 'core',
+      previousQuestions = [] 
+    } = req.body;
 
-Generate ONE realistic interview question that tech companies frequently ask.
+    const subtopics = [
+      "CrashLoopBackOff and pod troubleshooting with kubectl logs & describe",
+      "Difference between ClusterIP, NodePort, and Ingress routing",
+      "ConfigMaps, Secrets, and how sensitive data is securely injected",
+      "Readiness vs Liveness probes and avoiding cascading failures",
+      "Resource requests, resource limits, and OOMKilled scenarios",
+      "Multi-stage Docker build optimizations and security best practices",
+      "CI/CD pipeline stages: build, automated test, vulnerability scan, and deployment",
+      "Terraform state file management and locking in team workflows",
+      "AWS VPC public vs private subnets, NAT Gateway, and security groups",
+      "Monitoring and alerting: Prometheus metrics vs logging with Grafana",
+      "Rollback strategies during a failed production deployment (Blue/Green, Canary)"
+    ];
+
+    const randomSeed = Math.floor(Math.random() * 100000);
+    const suggestedSubtopic = subtopics[Math.floor(Math.random() * subtopics.length)];
+
+    const prompt = `You are a Technical Lead conducting a mock technical interview in English for a DevOps/Cloud Internship candidate.
+Primary Domain: "${topic}"
+Target Level: "${level}"
+Interview Style: "${interviewStyle}"
+Suggested Subtopic to explore: "${suggestedSubtopic}"
+Random Seed: ${randomSeed}
+
+IMPORTANT RULE:
+Do NOT repeat or generate questions similar to these previously asked questions:
+${previousQuestions.length > 0 ? previousQuestions.map(q => `- ${q}`).join('\n') : '(None yet)'}
+
+Generate ONE fresh, engaging, and realistic technical question that tests understanding without being identical to textbook definitions.
 Return ONLY a valid JSON object with NO markdown backticks:
 {
-  "question": "The interview question in professional English",
+  "question": "The fresh interview question in professional English",
   "topic": "${topic}",
-  "difficulty": "Easy / Medium",
+  "difficulty": "Easy / Medium / Scenario",
   "guidance_vi": "Gợi ý ngắn bằng tiếng Việt: trọng tâm cần trả lời, từ khóa cần có",
   "key_points": ["Keyword/Concept 1", "Keyword/Concept 2", "Keyword/Concept 3"]
 }`;
 
     const raw = await callLLM([
-      { role: "system", content: "You output only clean raw JSON objects." },
+      { role: "system", content: "You output only clean raw JSON objects. Vary your questions widely and never repeat recent questions." },
       { role: "user", content: prompt }
-    ], 0.7);
+    ], 0.95);
 
     let clean = raw.trim();
     if (clean.startsWith('```json')) clean = clean.slice(7);
@@ -223,17 +289,25 @@ Return ONLY a valid JSON object with NO markdown backticks:
   }
 });
 
-// 4. Interactive Mentor Chat
+// 5. Interactive Mentor Chat
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages = [] } = req.body;
     const systemPrompt = {
       role: "system",
-      content: `You are 'Alex', an encouraging Senior DevOps & Cloud Mentor at a tech company.
-Your goal is to help an aspiring student prepare for their DevOps/Cloud Internship interview and build confidence communicating in professional English.
-- Always converse primarily in natural, clear English.
-- If the user writes in Vietnamese or makes English mistakes, gently explain technical concepts in English and provide short Vietnamese hints/translations when helpful.
-- Keep responses engaging, supportive, and packed with practical DevOps/Cloud context (Kubernetes, Docker, CI/CD, Terraform, AWS, Linux).`
+      content: `You are 'Alex', an encouraging Senior DevOps & Cloud Mentor at an international tech company.
+Your goal is to help an aspiring intern (Kien) master professional English communication and ace DevOps/Cloud technical interviews.
+
+GUIDELINES FOR YOUR RESPONSES:
+1. Always format responses cleanly with clear structure:
+   - Use double line breaks between paragraphs.
+   - Use bold (**keyword**) for key English phrases to remember.
+   - Use code backticks (\`kubectl logs\`, \`docker build\`) for commands and technical terms.
+   - Use bullet points (- or 1., 2.) for structured advice or multi-step templates.
+   - Use blockquotes (> Quote) when giving a sentence template for the user to practice speaking.
+2. If the user makes grammatical mistakes, gently rephrase their sentence into a more natural, professional version (e.g. "Better way to say it in an interview: > ...").
+3. Always ask an engaging, relevant follow-up question to keep the conversation flowing naturally.
+4. Keep the tone warm, highly motivating, and technical.`
     };
 
     const fullMessages = [systemPrompt, ...messages.slice(-10)];
@@ -255,3 +329,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 DevOps English Hub running on http://0.0.0.0:${PORT}`);
   console.log(`🤖 Connected to 9Router (${ROUTER_URL}) using model ${ROUTER_MODEL}`);
 });
+
