@@ -10,7 +10,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=2.3.0">
+  <link rel="stylesheet" href="style.css?v=2.4.0">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-['Plus_Jakarta_Sans'] antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -111,6 +111,10 @@
             <i class="fa-solid fa-wand-magic-sparkles"></i>
             <span>AI Gen Từ Mới</span>
           </button>
+          <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer select-none px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700/80 hover:border-slate-600 transition-colors" title="Ẩn các từ bạn đã bấm 'Đã học' khỏi màn hình này">
+            <input type="checkbox" id="chk-hide-learned" onchange="renderVocabCards(currentVocabList)" class="rounded text-indigo-500 focus:ring-0 bg-slate-900 border-slate-700 w-3.5 h-3.5 cursor-pointer">
+            <span>Ẩn từ đã học</span>
+          </label>
         </div>
       </div>
 
@@ -401,7 +405,7 @@
     </div>
   </footer>
 
-  <script src="app.js?v=2.3.0"></script>
+  <script src="app.js?v=2.4.0"></script>
 </body>
 </html>
 

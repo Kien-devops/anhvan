@@ -145,14 +145,33 @@ app.get('/api/vocab/defaults', (req, res) => {
 
 app.post('/api/vocab/generate', async (req, res) => {
   try {
-    const { topic = 'DevOps', level = 'Intern/Junior' } = req.body;
+    const { topic = 'DevOps', level = 'Intern/Junior', existingTerms = [], learnedTerms = [] } = req.body;
+    
+    // Read learned vocab directly from persistent storage on server-tang4
+    const progress = readProgress();
+    const storedLearned = (progress.learnedVocab || []).map(v => v.term.trim().toLowerCase());
+    const clientLearned = (learnedTerms || []).map(t => String(t).trim().toLowerCase());
+    const clientExisting = (existingTerms || []).map(t => (typeof t === 'string' ? t : t.term || '').trim().toLowerCase());
+
+    const excludeSet = new Set([...storedLearned, ...clientLearned, ...clientExisting].filter(Boolean));
+    const excludeList = Array.from(excludeSet);
+
+    const exclusionNotice = excludeList.length > 0 
+      ? `CRITICAL EXCLUSION RULE:
+The user has ALREADY studied or has these terms in their list:
+${excludeList.slice(-60).map(t => `"${t}"`).join(', ')}
+You MUST NOT output or repeat ANY of the above terms. Generate ONLY completely fresh, new vocabulary terms for topic "${topic}".`
+      : '';
+
     const prompt = `You are a Senior DevOps Cloud Mentor. Generate 4 new, high-yield English vocabulary words or technical terms for an aspiring candidate applying for a DevOps/Cloud Internship.
 Topic: "${topic}", Level: "${level}".
+${exclusionNotice}
+
 Return ONLY a valid JSON array of objects with the following schema, with NO markdown backticks or extra text:
 [
   {
-    "category": "Topic category",
-    "term": "English term",
+    "category": "${topic}",
+    "term": "Fresh English term (NEVER repeat excluded terms)",
     "ipa": "/IPA pronunciation/",
     "viMeaning": "Nghĩa tiếng Việt súc tích",
     "definition": "Clear English explanation",
@@ -161,20 +180,29 @@ Return ONLY a valid JSON array of objects with the following schema, with NO mar
 ]`;
 
     const raw = await callLLM([
-      { role: "system", content: "You output only clean raw JSON arrays." },
+      { role: "system", content: "You output only clean raw JSON arrays. You strictly obey the exclusion rule and NEVER repeat terms that are already learned or provided in the excluded list." },
       { role: "user", content: prompt }
-    ], 0.7);
+    ], 0.85);
 
     let clean = raw.trim();
     if (clean.startsWith('```json')) clean = clean.slice(7);
     if (clean.startsWith('```')) clean = clean.slice(3);
     if (clean.endsWith('```')) clean = clean.slice(0, -3);
 
-    const parsed = JSON.parse(clean.trim());
+    let parsed = JSON.parse(clean.trim());
+    if (Array.isArray(parsed)) {
+      // Programmatically reject ANY term that was already learned or exists (100% guarantee)
+      parsed = parsed.filter(item => {
+        if (!item || !item.term) return false;
+        const norm = item.term.trim().toLowerCase();
+        return !excludeSet.has(norm);
+      });
+    }
+
     res.json({ success: true, data: parsed });
   } catch (error) {
     console.error('Error generating vocab:', error);
-    res.status(500).json({ success: false, error: error.message, fallback: DEFAULT_VOCAB });
+    res.status(500).json({ success: false, error: error.message, fallback: [] });
   }
 });
 

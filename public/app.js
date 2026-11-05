@@ -191,7 +191,23 @@ function renderVocabCards(list) {
     return;
   }
 
-  grid.innerHTML = list.map((item) => {
+  const hideLearned = document.getElementById('chk-hide-learned')?.checked || false;
+  const filteredList = hideLearned 
+    ? list.filter(item => !learnedVocabMap.has(item.term.trim().toLowerCase()))
+    : list;
+
+  if (filteredList.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-full py-12 text-center text-slate-400 bg-slate-900/30 rounded-2xl border border-slate-800">
+        <i class="fa-solid fa-circle-check text-2xl text-emerald-400 mb-2"></i>
+        <p class="text-sm font-semibold text-white">Bạn đã thuộc hết các từ vựng này rồi!</p>
+        <p class="text-xs text-slate-400 mt-1">Bỏ tick "Ẩn từ đã học" để ôn lại, hoặc bấm "AI Gen Từ Mới" để học thêm từ mới nhé.</p>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = filteredList.map((item) => {
     const isLearned = learnedVocabMap.has(item.term.toLowerCase());
     return `
     <div class="bg-slate-900/60 hover:bg-slate-900/90 border ${isLearned ? 'border-emerald-500/50 bg-emerald-950/10' : 'border-slate-800'} hover:border-indigo-500/40 rounded-2xl p-5 transition-all duration-200 flex flex-col justify-between group shadow-sm hover:shadow-lg">
@@ -396,17 +412,38 @@ async function generateAIVocab() {
   btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang suy nghĩ...</span>`;
 
   try {
-    const res = await fetch('/api/vocab/generate', {
+    const existingTerms = currentVocabList.map(v => v.term);
+    const learnedTerms = Array.from(learnedVocabMap.keys());
+
+    const res = await fetch('/api/vocab/generate?t=' + Date.now(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic: topic, level: 'Intern/Junior' })
+      body: JSON.stringify({ 
+        topic: topic, 
+        level: 'Intern/Junior',
+        existingTerms: existingTerms,
+        learnedTerms: learnedTerms
+      })
     });
     const data = await res.json();
-    if (data.success && data.data) {
-      currentVocabList = [...data.data, ...currentVocabList];
-      renderVocabCards(currentVocabList);
+    if (data.success && data.data && data.data.length > 0) {
+      // Filter out any word that has already been learned or already exists in current study list
+      const freshTerms = data.data.filter(item => {
+        if (!item || !item.term) return false;
+        const norm = item.term.trim().toLowerCase();
+        const isLearned = learnedVocabMap.has(norm);
+        const isDuplicate = currentVocabList.some(c => c.term.trim().toLowerCase() === norm);
+        return !isLearned && !isDuplicate;
+      });
+
+      if (freshTerms.length === 0) {
+        alert("Các từ AI vừa gợi ý bạn đều đã thuộc hoặc đã có trong danh sách! Hãy bấm lại lần nữa để AI chọn các từ kỹ thuật khác.");
+      } else {
+        currentVocabList = [...freshTerms, ...currentVocabList];
+        renderVocabCards(currentVocabList);
+      }
     } else {
-      alert("Không thể gen từ mới: " + (data.error || 'Vui lòng thử lại sau.'));
+      alert("Không có từ mới nào được tạo hoặc có lỗi: " + (data.error || 'Vui lòng thử lại sau.'));
     }
   } catch (err) {
     console.error(err);
