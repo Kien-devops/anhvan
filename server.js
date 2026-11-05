@@ -551,18 +551,28 @@ ${contextStack}
 Interview Question: "${question}"
 Candidate's English Answer: "${answer}"
 
-Provide constructive feedback evaluating both Technical Accuracy (giving positive recognition for correct architectural choices and tools) and Professional English Communication.
+CRITICAL INSTRUCTION FOR CORRECTING CANDIDATE'S ANSWER:
+- DO NOT just discard their sentence and make up a completely new one! Candidate specifically requested: "chỉnh lại câu của tôi cho chuẩn cấu trúc đừng có làm mới luôn".
+- You MUST provide "corrected_candidate_answer_en": Take the candidate's EXACT words, sentence structure, and vocabulary, and directly fix the grammar mistakes, verb tenses (e.g. 'is not save' -> 'do not save'), missing articles ('a', 'the'), prepositions, active/passive voice ('not need check' -> 'do not need to be checked'), and punctuation. It MUST sound like the candidate's own sentence, just made 100% grammatically correct and natural.
+- Provide "specific_corrections": A short array of specific fixes made directly on their sentence.
+
+Provide constructive feedback evaluating both Technical Accuracy and Professional English Communication.
 Return ONLY a valid JSON object with NO markdown backticks:
 {
   "score": 8, // Integer from 1 to 10
   "summary_vi": "Nhận xét tổng quan súc tích bằng tiếng Việt",
   "strengths_en": "What the candidate answered well (in English)",
+  "corrected_candidate_answer_en": "Direct grammatical fix of the candidate's answer, preserving their original wording and structure",
+  "corrected_candidate_answer_vi": "Bản dịch nghĩa tiếng Việt của câu đã sửa",
+  "specific_corrections": [
+    { "original": "cụm từ sai của bạn", "corrected": "cụm từ đã sửa", "reason": "giải thích ngắn gọn tại sao sửa" }
+  ],
   "improvements": {
     "grammar_pronunciation_vi": "Góp ý sửa lỗi ngữ pháp, từ vựng hoặc cách diễn đạt tiếng Anh",
     "technical_feedback_vi": "Góp ý về tính chính xác kỹ thuật DevOps/Cloud hoặc từ khóa kiến trúc nên bổ sung"
   },
-  "model_answer_en": "An ideal, polished answer that a strong candidate would speak during the interview (clear, concise, natural)",
-  "model_answer_vi": "Bản dịch nghĩa tiếng Việt của câu trả lời mẫu"
+  "model_answer_en": "An ideal, polished answer that a Senior Tech Lead would speak (for extra reference)",
+  "model_answer_vi": "Bản dịch nghĩa tiếng Việt của câu trả lời mẫu nâng cao"
 }`;
 
     const raw = await callLLM([
@@ -589,6 +599,9 @@ Return ONLY a valid JSON object with NO markdown backticks:
         score: parsed.score || 7,
         summary_vi: parsed.summary_vi || '',
         strengths_en: parsed.strengths_en || '',
+        corrected_candidate_answer_en: parsed.corrected_candidate_answer_en || '',
+        corrected_candidate_answer_vi: parsed.corrected_candidate_answer_vi || '',
+        specific_corrections: parsed.specific_corrections || [],
         improvements: parsed.improvements || {},
         model_answer_en: parsed.model_answer_en || '',
         model_answer_vi: parsed.model_answer_vi || '',
@@ -708,18 +721,32 @@ KIEN'S BACKGROUND & CREDENTIALS:
   4. On-Premise K3s Homelab (Bare-metal K3s, HAProxy, Cloudflare Zero Trust Tunnels, External Secrets Operator)
   5. DevSecOps CI/CD Pipeline (GitHub Actions, Trivy container scanning, SonarQube quality gate, GHCR, Non-root containers)
 
-YOUR MENTORING ROLE:
+YOUR MENTORING ROLE & CRITICAL RESPONSE RULES:
 1. Help Kien practice articulating these exact projects, AWS certification concepts, or technical topics in fluent, professional English.
-2. If he asks about an interview topic, quiz him or give him realistic speaking templates using the STAR method.
-3. Always format responses cleanly with clear structure:
-   - Use double line breaks between paragraphs.
+
+2. 🔥 QUY TẮC CỐT LÕI KHI KIÊN TRẢ LỜI HOẶC GÕ TIẾNG ANH (CỰC KỲ QUAN TRỌNG):
+   Khi Kiên gửi câu tiếng Anh (kể cả câu ngữ pháp còn lộn xộn, sai thì, thiếu giới từ, dùng từ chưa chuẩn):
+   - ❌ TUYỆT ĐỐI KHÔNG ĐƯỢC BỎ CÂU CỦA KIÊN ĐI RỒI VIẾT LẠI MỘT CÂU HOÀN TOÀN MỚI XA LẠ! ("Kiên yêu cầu: Chỉnh lại câu của tôi cho chuẩn cấu trúc đừng có làm mới luôn").
+   - ✅ BẮT BUỘC SỬA TRỰC TIẾP TRÊN NỀN CÂU CỦA KIÊN: Giữ nguyên từ vựng, ý tưởng và trật tự mạch câu của Kiên, chỉ nắn chỉnh lại ngữ pháp, chia đúng động từ (ví dụ: 'is not save' -> 'do not save' / 'does not save'), thêm mạo từ ('a', 'the'), giới từ, chỉnh thể bị động ('not need check' -> 'do not need to be checked'), và sửa dấu câu.
+   - TRÌNH BÀY RÕ RÀNG THEO ĐÚNG CẤU TRÚC 4 BƯỚC NÀY MỖI KHI SỬA CÂU:
+     1. 🎯 **Câu của bạn đã chỉnh chuẩn ngữ pháp (Giữ nguyên cấu trúc của bạn):**
+        > "[Câu tiếng Anh đã sửa trực tiếp từ câu của Kiên, chuẩn 100% ngữ pháp]"
+        👉 *Dịch nghĩa:* [Bản dịch tiếng Việt tự nhiên]
+     2. 🛠️ **Các điểm đã sửa trên câu của bạn:**
+        - Gạch đầu dòng các lỗi cụ thể: \`từ sai trong câu của Kiên\` ➔ \`từ đã sửa chuẩn\` (kèm 1 dòng giải thích ngắn vì sao sửa).
+     3. 🚀 **(Tham khảo thêm) Cách diễn đạt chuyên sâu kiểu Senior Tech Lead:**
+        > "[Phiên bản nâng cao hơn cho Kiên tham khảo thêm từ vựng nâng cao, nhưng câu chính để Kiên học vẫn là câu (1)]"
+     4. 💬 **Đánh giá kiến thức kỹ thuật & Câu hỏi tiếp theo:**
+        - Khen ngợi điểm kỹ thuật đúng (ví dụ: hiểu đúng bản chất stateful/stateless).
+        - Góp ý thuật ngữ chuyên ngành chuẩn nếu cần.
+        - Đặt 1 câu hỏi tiếp theo để Kiên tiếp tục luyện phản xạ.
+
+3. Formatting rules:
+   - Use double line breaks between sections.
    - Use bold (**keyword**) for key English phrases to remember.
-   - Use code backticks (\`kubectl logs\`, \`docker build\`) for commands and technical terms.
-   - Use bullet points (- or 1., 2.) for structured advice or multi-step templates.
-   - Use blockquotes (> Quote) when giving a sentence template for Kien to practice speaking aloud.
-4. If Kien makes grammatical mistakes, gently rephrase his sentence into a more natural, Senior-level version (e.g. "Senior way to say it in an interview: > ...").
-5. Always ask an engaging, relevant follow-up question to keep the conversation flowing naturally.
-6. Keep the tone warm, highly motivating, and technical.`
+   - Use code backticks (\`kubectl logs\`, \`stateful rule\`) for commands and technical terms.
+   - Use blockquotes (> Quote) for speaking templates so Kiên can click TTS or read aloud easily.
+   - Keep the tone warm, encouraging, respectful, and technical.`
     };
 
     const fullMessages = [systemPrompt, ...messages.slice(-10)];

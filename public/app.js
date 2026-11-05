@@ -452,6 +452,20 @@ function renderInterviewHistory() {
           </p>
         </div>
 
+        ${item.corrected_candidate_answer_en ? `
+          <div class="p-3 bg-[#f0fdf4] border-2 border-[#151515] rounded-xl space-y-1">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[11px] font-black text-emerald-800 uppercase flex items-center gap-1">
+                <i class="fa-solid fa-wand-magic-sparkles text-emerald-600"></i> Câu của bạn sau khi sửa chuẩn (Giữ nguyên cấu trúc):
+              </span>
+              <button onclick="toggleSpeak('${item.corrected_candidate_answer_en.replace(/'/g, "\\'")}', this)" class="text-[10px] font-bold text-[#151515] bg-white border border-[#151515] px-2 py-0.5 rounded shadow-[1px_1px_0px_#151515] hover:bg-[#4ade80] flex items-center gap-1" title="Bấm nghe, bấm lần nữa để dừng">
+                <i class="fa-solid fa-volume-high text-[#5294ff]"></i> <span>Nghe</span>
+              </button>
+            </div>
+            <p class="text-xs text-[#151515] font-mono font-bold">"${item.corrected_candidate_answer_en}"</p>
+          </div>
+        ` : ''}
+
         <div class="text-xs text-[#151515] font-semibold bg-[#f0fdf4] p-3 rounded-xl border-2 border-[#151515]">
           <span class="text-emerald-700 font-black">Nhận xét AI:</span> ${item.summary_vi || ''}
         </div>
@@ -459,7 +473,7 @@ function renderInterviewHistory() {
         ${item.model_answer_en ? `
           <div class="p-3 bg-[#fffbeb] border-2 border-[#151515] rounded-xl space-y-1">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-[11px] font-black text-[#151515] uppercase">Câu trả lời mẫu chuẩn:</span>
+              <span class="text-[11px] font-black text-[#151515] uppercase">Tham khảo thêm (Phong cách Senior Tech Lead):</span>
               <button onclick="toggleSpeak('${item.model_answer_en.replace(/'/g, "\\'")}', this)" class="text-[10px] font-bold text-[#151515] bg-white border border-[#151515] px-2 py-0.5 rounded shadow-[1px_1px_0px_#151515] hover:bg-[#f4d77c] flex items-center gap-1" title="Bấm nghe, bấm lần nữa để dừng">
                 <i class="fa-solid fa-volume-high text-[#5294ff]"></i> <span>Nghe</span>
               </button>
@@ -935,9 +949,45 @@ function renderEvaluationResult(evalData) {
           <div class="flex items-center gap-2 text-amber-800 text-xs font-black uppercase tracking-wider">
             <i class="fa-solid fa-wand-magic-sparkles"></i> Góp ý ngữ pháp & Từ vựng
           </div>
-          <p class="text-xs text-[#151515] font-medium leading-relaxed">${evalData.improvements?.grammar_pronunciation_vi || 'Xem câu trả lời mẫu bên dưới để cải thiện câu từ.'}</p>
+          <p class="text-xs text-[#151515] font-medium leading-relaxed">${evalData.improvements?.grammar_pronunciation_vi || 'Xem câu trả lời đã chỉnh sửa bên dưới để cải thiện câu từ.'}</p>
         </div>
       </div>
+
+      <!-- DIRECT CORRECTION OF CANDIDATE'S ANSWER (Sửa trực tiếp trên câu của bạn) -->
+      ${evalData.corrected_candidate_answer_en ? `
+        <div class="bg-[#f0fdf4] border-2 border-[#151515] shadow-[3px_3px_0px_#151515] rounded-xl p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles text-emerald-600"></i> Câu của bạn sau khi sửa chuẩn (Giữ nguyên cấu trúc & từ ngữ của bạn):
+            </span>
+            <button onclick="toggleSpeak('${evalData.corrected_candidate_answer_en.replace(/'/g, "\\'")}', this)" class="px-3.5 py-1.5 bg-[#4ade80] hover:bg-[#22c55e] text-[#151515] text-xs font-black rounded-xl border-2 border-[#151515] shadow-[2px_2px_0px_#151515] flex items-center gap-1.5 transition active:scale-95" title="Bấm nghe câu của bạn đã sửa">
+              <i class="fa-solid fa-volume-high"></i> <span>Nghe câu đã sửa</span>
+            </button>
+          </div>
+          <p class="text-sm font-black text-[#151515] font-['JetBrains_Mono'] leading-relaxed bg-white p-3 rounded-lg border-2 border-[#151515]">
+            "${evalData.corrected_candidate_answer_en}"
+          </p>
+          ${evalData.corrected_candidate_answer_vi ? `
+            <p class="text-xs text-slate-700 italic font-medium">👉 <b>Dịch nghĩa:</b> ${evalData.corrected_candidate_answer_vi}</p>
+          ` : ''}
+
+          ${evalData.specific_corrections && evalData.specific_corrections.length > 0 ? `
+            <div class="pt-2 border-t-2 border-[#151515] space-y-1.5">
+              <p class="text-[11px] font-black uppercase text-[#151515]">Chi tiết các điểm đã sửa trực tiếp trên câu của bạn:</p>
+              <div class="space-y-1">
+                ${evalData.specific_corrections.map(sc => `
+                  <div class="text-xs text-[#151515] flex items-start gap-1.5">
+                    <span class="text-rose-600 font-bold line-through">${sc.original}</span>
+                    <span class="font-bold">➔</span>
+                    <span class="text-emerald-800 font-black bg-white px-1.5 py-0.5 rounded border border-[#151515]">${sc.corrected}</span>
+                    <span class="text-slate-600 text-[11px]">(${sc.reason})</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
 
       <!-- Technical Accuracy -->
       ${evalData.improvements?.technical_feedback_vi ? `
@@ -949,11 +999,11 @@ function renderEvaluationResult(evalData) {
         </div>
       ` : ''}
 
-      <!-- Model Answer -->
+      <!-- Model Answer (Tham khảo nâng cao) -->
       <div class="bg-[#fffbeb] p-5 rounded-xl border-2 border-[#151515] shadow-[3px_3px_0px_#151515] space-y-3">
         <div class="flex items-center justify-between">
           <span class="text-xs font-black text-[#151515] uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-star text-amber-500"></i> Câu trả lời mẫu chuẩn Senior (Model Answer)
+            <i class="fa-solid fa-star text-amber-500"></i> Tham khảo thêm: Phong cách Senior Tech Lead (Model Answer)
           </span>
           <button onclick="toggleSpeak('${evalData.model_answer_en.replace(/'/g, "\\'")}', this)" class="px-3.5 py-1.5 bg-[#5294ff] hover:bg-[#3b82f6] text-[#151515] text-xs font-black rounded-xl border-2 border-[#151515] shadow-[2px_2px_0px_#151515] flex items-center gap-1.5 transition active:scale-95" title="Bấm nghe, bấm lần nữa để dừng">
             <i class="fa-solid fa-volume-high"></i> <span>Nghe phát âm mẫu</span>
