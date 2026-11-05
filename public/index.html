@@ -10,7 +10,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=2.2.0">
+  <link rel="stylesheet" href="style.css?v=2.3.0">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-['Plus_Jakarta_Sans'] antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -85,12 +85,27 @@
           <p class="text-sm text-slate-400 mt-1">Từ vựng giao tiếp thực tế + chuyên ngành kỹ thuật để làm việc và trả lời phỏng vấn.</p>
         </div>
         <div class="flex items-center gap-3">
-          <select id="vocab-topic" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500">
-            <option value="Kubernetes & Containers">Kubernetes & Containers</option>
-            <option value="CI/CD & GitOps">CI/CD & GitOps</option>
-            <option value="Cloud & AWS Architecture">Cloud & AWS Architecture</option>
-            <option value="Linux & Networking">Linux & Networking</option>
-            <option value="Workplace Communication">Giao tiếp công sở (Standup/Meeting)</option>
+          <select id="vocab-topic" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500 max-w-[280px]">
+            <optgroup label="📂 Từ Vựng Theo 5 Project Đã Ghim">
+              <option value="AWS EKS Network Fabric & GWLB">🛡️ AWS EKS Network Fabric & Suricata</option>
+              <option value="AWS Multi-Region Disaster Recovery">🔄 Multi-Region DR & $0 Standby</option>
+              <option value="SRE Observability & Prometheus/Grafana">📊 Cloud-Native SRE & Observability</option>
+              <option value="On-Premise K3s & Cloudflare Tunnel">☸️ On-Prem K3s & Cloudflare Tunnel</option>
+              <option value="DevSecOps & Supply Chain Security">🚀 DevSecOps & Container Security</option>
+            </optgroup>
+            <optgroup label="🏅 Từ Vựng Theo 5 Cert AWS">
+              <option value="AWS DOP-C02 DevOps Pro Vocab">🏅 AWS DevOps Pro (DOP-C02)</option>
+              <option value="AWS SAA-C03 Solutions Architect Vocab">🏅 AWS Solutions Architect (SAA-C03)</option>
+              <option value="AWS SOA-C02 SysOps Administrator Vocab">🏅 AWS SysOps Admin (SOA-C02)</option>
+              <option value="AWS DVA-C02 Developer Associate Vocab">🏅 AWS Developer Assoc (DVA-C02)</option>
+              <option value="AWS Cloud Practitioner Essentials">🏅 AWS Cloud Practitioner (CLF-C02)</option>
+            </optgroup>
+            <optgroup label="⚙️ Nền Tảng Kỹ Thuật">
+              <option value="Kubernetes & Containers">☸️ Kubernetes & Containers</option>
+              <option value="CI/CD & GitOps">🚀 CI/CD & GitOps</option>
+              <option value="Linux & Networking">🐧 Linux & Networking</option>
+              <option value="Workplace Communication">💬 Giao tiếp công sở (Standup/Meeting)</option>
+            </optgroup>
           </select>
           <button onclick="generateAIVocab()" id="btn-gen-vocab" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium text-sm rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-2 transition-all active:scale-95">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -159,18 +174,35 @@
             <p class="text-sm text-slate-300 mt-1">AI Tech Lead sẽ hỏi bạn câu hỏi thực tế bằng tiếng Anh. Bạn có thể nói bằng Mic hoặc gõ phím để AI chấm điểm và sửa lỗi!</p>
           </div>
           <div class="flex items-center gap-2 flex-wrap">
-            <select id="interview-topic" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500">
-              <option value="Kubernetes & Container Orchestration">Kubernetes & Pod Lifecycle</option>
-              <option value="CI/CD Pipeline & GitHub Actions">CI/CD & GitHub Actions</option>
-              <option value="AWS Cloud Architecture & VPC">AWS Architecture & VPC</option>
-              <option value="Linux System & Networking Troubleshooting">Linux & Networking</option>
-              <option value="DevOps Culture & Soft Skills">Văn hóa DevOps & Xử lý tình huống</option>
+            <select id="interview-topic" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500 max-w-[320px]">
+              <optgroup label="📂 5 Dự Án Đã Ghim (Pinned Projects)">
+                <option value="project:eks-network-fabric">🛡️ Project: AWS EKS Secure Network Fabric (TGW, GWLB, Suricata)</option>
+                <option value="project:multi-region-dr">🔄 Project: AWS Multi-Region Disaster Recovery ($0 Standby, Route 53)</option>
+                <option value="project:cloud-native-sre">📊 Project: Cloud-Native SRE Platform (Prometheus, Loki, Grafana)</option>
+                <option value="project:k3s-onprem">☸️ Project: On-Premise K3s Homelab (Bare-metal, Cloudflare Tunnel, ESO)</option>
+                <option value="project:devsecops-pipeline">🚀 Project: DevSecOps CI/CD Pipeline (Trivy, SonarQube, GHCR)</option>
+              </optgroup>
+              <optgroup label="🏅 5 Chứng Chỉ AWS (Certifications)">
+                <option value="cert:dop-c02">🏅 AWS DevOps Engineer – Professional (DOP-C02)</option>
+                <option value="cert:saa-c03">🏅 AWS Solutions Architect – Associate (SAA-C03)</option>
+                <option value="cert:soa-c02">🏅 AWS SysOps Administrator – Associate (SOA-C02)</option>
+                <option value="cert:dva-c02">🏅 AWS Developer – Associate (DVA-C02)</option>
+                <option value="cert:clf-c02">🏅 AWS Cloud Practitioner (CLF-C02)</option>
+              </optgroup>
+              <optgroup label="⚙️ Kỹ Thuật Nền Tảng (Core DevOps & Cloud)">
+                <option value="Kubernetes & Container Orchestration">☸️ Kubernetes & Pod Lifecycle</option>
+                <option value="CI/CD Pipeline & GitHub Actions">🚀 CI/CD & GitHub Actions</option>
+                <option value="Linux System & Networking Troubleshooting">🐧 Linux & Networking Troubleshooting</option>
+                <option value="DevOps Culture & Soft Skills">🤝 Văn hóa DevOps & Xử lý tình huống</option>
+              </optgroup>
             </select>
-            <select id="interview-style" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500">
-              <option value="scenario">Tình huống thực tế (Scenario / Debug)</option>
-              <option value="core">Khái niệm cốt lõi (Core Concepts)</option>
-              <option value="project">Hỏi về Dự án Homelab / Kinh nghiệm</option>
-              <option value="behavioral">Câu hỏi tình huống (Behavioral / Soft skill)</option>
+            <select id="interview-style" class="bg-slate-800 text-slate-200 text-sm rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500 max-w-[260px]">
+              <option value="scenario">⚡ Tình huống thực tế (Scenario / Debug)</option>
+              <option value="project">🎯 Hỏi sâu về Dự án của bạn (Project Defense)</option>
+              <option value="cert_exam">📜 Chuẩn đề thi chứng chỉ AWS (AWS Exam-style)</option>
+              <option value="deep_dive">🔬 Đào sâu kỹ thuật chi tiết (Technical Deep-Dive)</option>
+              <option value="core">💡 Khái niệm cốt lõi (Core Concepts)</option>
+              <option value="behavioral">🤝 Câu hỏi tình huống (Behavioral / STAR Method)</option>
             </select>
             <button onclick="requestNewQuestion()" id="btn-new-question" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-2 transition-all active:scale-95">
               <i class="fa-solid fa-arrows-rotate"></i>
@@ -369,7 +401,7 @@
     </div>
   </footer>
 
-  <script src="app.js?v=2.2.0"></script>
+  <script src="app.js?v=2.3.0"></script>
 </body>
 </html>
 

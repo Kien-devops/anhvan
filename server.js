@@ -215,50 +215,226 @@ Return ONLY a valid JSON array of objects with the following schema, with NO mar
 });
 
 // 3. Mock Interview Question Generation
+const TOPIC_DETAILS = {
+  // Pinned Projects
+  "project:eks-network-fabric": {
+    name: "Project: AWS EKS Secure Network Fabric",
+    stack: "AWS EKS, Transit Gateway (TGW), Gateway Load Balancer (GWLB), Suricata IDS/IPS with GENEVE encapsulation, AWS Network Firewall, Centralized Egress",
+    subtopics: [
+      "Why use GWLB with GENEVE encapsulation for Suricata deep packet inspection rather than traditional proxying?",
+      "Transit Gateway route table isolation: routing East-West and North-South traffic to the inspection VPC without asymmetric routing",
+      "Centralized egress architecture using AWS Network Firewall: stateful inspection, TLS SNI domain allowlisting, and NAT Gateway placement",
+      "How GENEVE headers preserve the original client IP and port when forwarding packets through Suricata worker instances",
+      "Defense-in-depth: combining Kubernetes EKS NetworkPolicies with inline Suricata IDS/IPS and AWS Network Firewall"
+    ]
+  },
+  "project:multi-region-dr": {
+    name: "Project: AWS Multi-Region Disaster Recovery",
+    stack: "Automated Multi-Region DR, $0 Standby Compute Cost, Amazon Route 53 ARC / Health Checks, S3 Cross-Region Replication, DynamoDB Global Tables, RDS snapshot automation",
+    subtopics: [
+      "How do you achieve $0 idle compute cost in the secondary region while meeting tight RTO and RPO targets?",
+      "Route 53 Application Recovery Controller (ARC) and DNS health check failover mechanics during region failure",
+      "Data consistency vs replication latency: S3 Cross-Region Replication vs DynamoDB Global Tables vs RDS automated cross-region snapshot restores",
+      "Automated infrastructure spin-up in the secondary region using Terraform/CloudFormation during an actual disaster recovery event",
+      "How do you conduct Chaos Engineering or game day simulations to test multi-region failover without impacting production?"
+    ]
+  },
+  "project:cloud-native-sre": {
+    name: "Project: Cloud-Native SRE Platform",
+    stack: "Prometheus, Loki, Grafana, Alertmanager, SRE Metrics (SLI/SLO/Error Budgets), Discord/Slack notifications",
+    subtopics: [
+      "Designing meaningful SLIs and SLOs for Kubernetes microservices: latency percentiles (p99/p95) vs error rates",
+      "Prometheus PromQL: rate() vs irate() and multi-window multi-burn-rate alerting for error budget burn rates",
+      "Loki log aggregation with Promtail: optimizing log streams and preventing high cardinality label explosions",
+      "Alertmanager routing, inhibition, and deduplication rules to avoid alert fatigue during major incidents",
+      "Conducting a Blameless Postmortem: incident timeline reconstruction, root cause analysis, and preventative action items"
+    ]
+  },
+  "project:k3s-onprem": {
+    name: "Project: On-Premise K3s Homelab",
+    stack: "Bare-metal K3s Cluster, HAProxy, Cloudflare Zero Trust Tunnels, External Secrets Operator (ESO), Headlamp, Traefik Ingress",
+    subtopics: [
+      "Bare-metal K3s vs cloud managed EKS: resource constraints, control plane management, and worker node architecture",
+      "Publishing internal services securely with Cloudflare Zero Trust Tunnels without opening public router inbound ports",
+      "HAProxy reverse proxy configuration: SSL termination, health checking, and routing traffic to K3s ingress controllers",
+      "Automating Kubernetes secrets syncing using External Secrets Operator (ESO) connected to cloud secret stores",
+      "Persistent storage management on bare-metal Kubernetes: local HostPath vs distributed storage trade-offs"
+    ]
+  },
+  "project:devsecops-pipeline": {
+    name: "Project: DevSecOps CI/CD Pipeline",
+    stack: "GitHub Actions, Trivy Container Scanner, SonarQube Quality Gate, GHCR, HashiCorp Vault / AWS Secrets Manager, Non-root containers",
+    subtopics: [
+      "Shift-left security: automating Trivy vulnerability scans and SonarQube quality gates directly in GitHub Actions",
+      "Container hardening: multi-stage Docker builds, distroless base images, non-root users, and read-only root filesystems",
+      "Eliminating hardcoded secrets using GitHub OIDC with cloud IAM roles and external secrets synchronization",
+      "Container image provenance, digest pinning, and cryptographic signing before pushing to GitHub Container Registry (GHCR)",
+      "How to triage and handle high/critical CVEs reported by vulnerability scanners without halting urgent hotfixes"
+    ]
+  },
+
+  // 5 AWS Certifications
+  "cert:dop-c02": {
+    name: "AWS Certified DevOps Engineer – Professional (DOP-C02)",
+    stack: "Advanced CI/CD, Infrastructure as Code, Automated Remediation, EventBridge, CloudFormation StackSets, Service Control Policies, Multi-account governance",
+    subtopics: [
+      "Automating Blue/Green and Canary deployments using AWS CodeDeploy, ECS/EKS, and Route 53 weighted DNS routing",
+      "Event-driven automated remediation using Amazon EventBridge rules, AWS Config, and Systems Manager Automation runbooks",
+      "Cross-account continuous delivery pipelines with AWS CodePipeline, customer-managed KMS keys, and assume role delegations",
+      "Disaster recovery automation: cross-region AMI replication, RDS cross-region read replicas, and CloudFormation StackSets",
+      "Centralized multi-account logging architecture with CloudWatch Logs subscription filters and Kinesis Data Firehose"
+    ]
+  },
+  "cert:saa-c03": {
+    name: "AWS Certified Solutions Architect – Associate (SAA-C03)",
+    stack: "AWS Well-Architected Framework, High Availability, Resilient Multi-AZ VPCs, Asynchronous Decoupling, S3 Lifecycle, Cost Optimization",
+    subtopics: [
+      "Designing a highly available, fault-tolerant Multi-AZ VPC with public subnets, private subnets, NAT Gateways, and ALB",
+      "Decoupling microservices using Amazon SQS FIFO queues, SNS fan-out patterns, and EventBridge buses",
+      "S3 storage tiering: S3 Standard vs Intelligent-Tiering vs Glacier Instant/Deep Archive and lifecycle rules",
+      "Database selection: Amazon RDS Multi-AZ vs Amazon Aurora Global Database vs DynamoDB for specific workload requirements",
+      "Securing cloud architectures with IAM least privilege, Service Control Policies (SCPs), and VPC Endpoints (PrivateLink)"
+    ]
+  },
+  "cert:soa-c02": {
+    name: "AWS Certified SysOps Administrator – Associate (SOA-C02)",
+    stack: "Monitoring & Reporting, Systems Manager, Remediation, High Availability & Business Continuity, Security & Compliance",
+    subtopics: [
+      "Diagnosing degraded EC2 instances: system status checks vs instance status checks and auto-recovery CloudWatch alarms",
+      "AWS Systems Manager Session Manager for secure bastion-less shell access and Patch Manager automated patching baselines",
+      "Analyzing VPC Flow Logs using CloudWatch Insights and Athena to detect rejected traffic and network anomalies",
+      "Monitoring and optimizing cloud expenditures using AWS Budgets, Cost Anomaly Detection, and Compute Optimizer",
+      "Backup compliance: configuring AWS Backup plans, cross-region and cross-account vault locks"
+    ]
+  },
+  "cert:dva-c02": {
+    name: "AWS Certified Developer – Associate (DVA-C02)",
+    stack: "Serverless with AWS Lambda & API Gateway, Amazon DynamoDB, AWS X-Ray, Amazon Cognito, AWS KMS",
+    subtopics: [
+      "Serverless architecture: managing AWS Lambda concurrency, cold starts, provisioning, and API Gateway request validation",
+      "Amazon DynamoDB advanced patterns: partition and sort key design, Global Secondary Indexes (GSIs), and query vs scan",
+      "Distributed tracing with AWS X-Ray: instrumenting subsegments, annotations, and pinpointing downstream service latency",
+      "User authentication and authorization using Amazon Cognito User Pools, Identity Pools, and JWT token validation",
+      "Secure application configuration using AWS AppConfig, Systems Manager Parameter Store, and Secrets Manager caching"
+    ]
+  },
+  "cert:clf-c02": {
+    name: "AWS Certified Cloud Practitioner (CLF-C02)",
+    stack: "Cloud Value Proposition, Shared Responsibility Model, AWS Well-Architected 6 Pillars, Cloud Adoption Framework, Billing & Pricing",
+    subtopics: [
+      "AWS Shared Responsibility Model: explaining what AWS manages versus what the customer is responsible for",
+      "The 6 pillars of the AWS Well-Architected Framework and practical real-world trade-offs",
+      "AWS Global Infrastructure: Regions, Availability Zones, Local Zones, and Edge Locations (CloudFront)",
+      "Cloud economics: TCO, CapEx vs OpEx, and AWS Pricing Calculator estimation principles",
+      "Root user security: why root credentials must not be used for daily tasks, MFA, and credential reports"
+    ]
+  },
+
+  // Core DevOps
+  "Kubernetes & Container Orchestration": {
+    name: "Kubernetes & Container Orchestration",
+    stack: "Pod Lifecycle, Ingress, Services, ConfigMaps, Secrets, Probes, Resource Management",
+    subtopics: [
+      "CrashLoopBackOff and pod troubleshooting with kubectl logs, describe, and events",
+      "Difference between ClusterIP, NodePort, LoadBalancer, and Ingress routing in Kubernetes",
+      "Readiness vs Liveness probes and preventing cascading traffic failures during rolling updates",
+      "Resource requests, resource limits, and diagnosing OOMKilled (Exit Code 137) scenarios",
+      "ConfigMaps, Secrets, and how sensitive data is securely mounted and synchronized in pods"
+    ]
+  },
+  "CI/CD Pipeline & GitHub Actions": {
+    name: "CI/CD Pipeline & GitHub Actions",
+    stack: "Multi-stage pipelines, automated testing, security scanning, caching, deployment strategies",
+    subtopics: [
+      "Designing multi-stage CI/CD pipelines with build, automated test, vulnerability scan, and deploy jobs",
+      "Optimizing GitHub Actions build time with layer caching, matrix builds, and reusable workflows",
+      "Implementing semantic versioning, automated changelog generation, and Git tags in CI/CD",
+      "Securing runner environments: self-hosted runner security vs GitHub-hosted runners",
+      "Environment approval gates, branch protection rules, and PR merge checks"
+    ]
+  },
+  "Linux System & Networking Troubleshooting": {
+    name: "Linux System & Networking Troubleshooting",
+    stack: "Linux kernel, systemd, cgroups, tcpdump, ss, curl, netstat, DNS resolution",
+    subtopics: [
+      "Investigating high CPU/Memory load: top, htop, vmstat, and dmesg diagnostics",
+      "Linux network troubleshooting: netstat, ss, curl -Iv, tcpdump, and DNS resolution issues (resolv.conf)",
+      "Systemd service lifecycle, journalctl log inspection, and writing custom service units",
+      "File permissions, sticky bits, umask, and Linux user/group privilege escalation prevention",
+      "Understanding Linux cgroups and namespaces: how container isolation actually works at the kernel level"
+    ]
+  },
+  "DevOps Culture & Soft Skills": {
+    name: "DevOps Culture & Soft Skills",
+    stack: "STAR Method, Blameless Culture, Stakeholder Communication, Incident Management",
+    subtopics: [
+      "How to communicate a major production incident and downtime to stakeholders using blameless language",
+      "Resolving technical conflicts between developers wanting fast delivery and operations demanding stability",
+      "How to prioritize technical debt against urgent feature delivery requests from management",
+      "STAR method: Describe a challenging bug you fixed and what you learned from the experience",
+      "What steps do you take when you are blocked by another team or lack sufficient documentation?"
+    ]
+  }
+};
+
 app.post('/api/interview/question', async (req, res) => {
   try {
     const { 
-      topic = 'Kubernetes', 
-      level = 'Intern/Fresher',
-      interviewStyle = 'core',
+      topic = 'Kubernetes & Container Orchestration', 
+      level = 'Intern/Junior',
+      interviewStyle = 'scenario',
       previousQuestions = [] 
     } = req.body;
 
-    const subtopics = [
-      "CrashLoopBackOff and pod troubleshooting with kubectl logs & describe",
-      "Difference between ClusterIP, NodePort, and Ingress routing",
-      "ConfigMaps, Secrets, and how sensitive data is securely injected",
-      "Readiness vs Liveness probes and avoiding cascading failures",
-      "Resource requests, resource limits, and OOMKilled scenarios",
-      "Multi-stage Docker build optimizations and security best practices",
-      "CI/CD pipeline stages: build, automated test, vulnerability scan, and deployment",
-      "Terraform state file management and locking in team workflows",
-      "AWS VPC public vs private subnets, NAT Gateway, and security groups",
-      "Monitoring and alerting: Prometheus metrics vs logging with Grafana",
-      "Rollback strategies during a failed production deployment (Blue/Green, Canary)"
-    ];
+    const topicInfo = TOPIC_DETAILS[topic] || {
+      name: topic,
+      stack: "DevOps, Cloud, CI/CD, Containerization",
+      subtopics: [
+        "Troubleshooting container failures",
+        "CI/CD pipeline security and automation",
+        "Infrastructure as Code and cloud resilience",
+        "Observability and incident triage"
+      ]
+    };
 
+    const subtopicList = topicInfo.subtopics;
+    const suggestedSubtopic = subtopicList[Math.floor(Math.random() * subtopicList.length)];
     const randomSeed = Math.floor(Math.random() * 100000);
-    const suggestedSubtopic = subtopics[Math.floor(Math.random() * subtopics.length)];
 
-    const prompt = `You are a Technical Lead conducting a mock technical interview in English for a DevOps/Cloud Internship candidate.
-Primary Domain: "${topic}"
-Target Level: "${level}"
+    let stylePromptGuide = "";
+    if (interviewStyle === 'project') {
+      stylePromptGuide = `The candidate (Nguyen Trung Kien) has built this project in their portfolio. Ask a deep, practical question specifically referencing their technical stack (${topicInfo.stack}). Challenge them on their architectural design choices, why they chose this specific tool or pattern, trade-offs, and how they would defend their implementation in a job interview.`;
+    } else if (interviewStyle === 'cert_exam') {
+      stylePromptGuide = `Frame this question as an authentic, high-level scenario question from the real AWS certification exam or an AWS partner company technical interview. Test deep knowledge of AWS architectural trade-offs, security, resilience, or cost optimization.`;
+    } else if (interviewStyle === 'deep_dive') {
+      stylePromptGuide = `Conduct a technical deep-dive into the internals (kernel, protocol, packet flow, or controller mechanics). Challenge the candidate on what happens under the hood.`;
+    } else if (interviewStyle === 'behavioral') {
+      stylePromptGuide = `Ask a behavioral / situational interview question using the STAR method (Situation, Task, Action, Result) in the context of DevOps collaboration, handling mistakes, or working with team members.`;
+    } else {
+      stylePromptGuide = `Pose a realistic operational scenario or debugging puzzle (e.g. production alert, failure mode, network latency, or unexpected error) that an intern/junior engineer would encounter on the job.`;
+    }
+
+    const prompt = `You are a Senior DevOps & Cloud Tech Lead interviewing candidate Nguyen Trung Kien for a DevOps/Cloud Internship at a top global technology company.
+Domain/Topic: "${topicInfo.name}"
+Technical Stack: "${topicInfo.stack}"
 Interview Style: "${interviewStyle}"
-Suggested Subtopic to explore: "${suggestedSubtopic}"
+Specific Area to Focus on: "${suggestedSubtopic}"
+Style Instructions: ${stylePromptGuide}
 Random Seed: ${randomSeed}
 
 IMPORTANT RULE:
-Do NOT repeat or generate questions similar to these previously asked questions:
+1. The "question" field MUST be written 100% in professional English for an English technical interview.
+2. Only "guidance_vi" should be in Vietnamese.
+3. Do NOT repeat or generate questions similar to these previously asked questions:
 ${previousQuestions.length > 0 ? previousQuestions.map(q => `- ${q}`).join('\n') : '(None yet)'}
 
-Generate ONE fresh, engaging, and realistic technical question that tests understanding without being identical to textbook definitions.
+Generate ONE fresh, engaging, and realistic technical question that tests understanding without being a generic textbook definition.
 Return ONLY a valid JSON object with NO markdown backticks:
 {
   "question": "The fresh interview question in professional English",
-  "topic": "${topic}",
-  "difficulty": "Easy / Medium / Scenario",
-  "guidance_vi": "Gợi ý ngắn bằng tiếng Việt: trọng tâm cần trả lời, từ khóa cần có",
+  "topic": "${topicInfo.name}",
+  "difficulty": "Medium / Hard / Scenario",
+  "guidance_vi": "Gợi ý ngắn bằng tiếng Việt: trọng tâm cần trả lời, từ khóa kỹ thuật cần có",
   "key_points": ["Keyword/Concept 1", "Keyword/Concept 2", "Keyword/Concept 3"]
 }`;
 
@@ -288,13 +464,16 @@ app.post('/api/interview/hint', async (req, res) => {
       return res.status(400).json({ success: false, error: "Question is required" });
     }
 
-    const prompt = `You are a Senior DevOps Interview Coach helping an internship candidate formulate a strong answer in English.
+    const topicInfo = TOPIC_DETAILS[topic];
+    const contextStack = topicInfo ? `Related Architecture & Stack: ${topicInfo.name} (${topicInfo.stack})` : `Topic: ${topic}`;
+
+    const prompt = `You are a Senior DevOps Interview Coach helping candidate Nguyen Trung Kien formulate a strong answer in English.
 Question: "${question}"
-Topic: "${topic}"
+${contextStack}
 
 Provide:
-1. Three high-impact technical keywords or tools to mention.
-2. A clear 3-step speaking outline.
+1. Three high-impact technical keywords, architectural terms, or tools to mention.
+2. A clear 3-step speaking outline that demonstrates deep technical understanding.
 3. A natural, professional starter template that the candidate can use to begin their answer.
 
 Return ONLY a valid JSON object with NO markdown backticks:
@@ -335,12 +514,16 @@ app.post('/api/interview/evaluate', async (req, res) => {
       return res.status(400).json({ success: false, error: "Answer cannot be empty" });
     }
 
-    const prompt = `You are an empathetic yet rigorous Senior DevOps Interviewer evaluating an internship candidate's English response.
+    const topicInfo = TOPIC_DETAILS[topic];
+    const contextStack = topicInfo ? `Domain: ${topicInfo.name} (Stack: ${topicInfo.stack})` : `Domain: ${topic}`;
+
+    const prompt = `You are an empathetic yet rigorous Senior DevOps Interviewer evaluating candidate Nguyen Trung Kien's English response for a DevOps/Cloud Internship.
+${contextStack}
 
 Interview Question: "${question}"
 Candidate's English Answer: "${answer}"
 
-Provide constructive feedback evaluating both Technical Understanding and Professional English Communication.
+Provide constructive feedback evaluating both Technical Accuracy (giving positive recognition for correct architectural choices and tools) and Professional English Communication.
 Return ONLY a valid JSON object with NO markdown backticks:
 {
   "score": 8, // Integer from 1 to 10
@@ -348,7 +531,7 @@ Return ONLY a valid JSON object with NO markdown backticks:
   "strengths_en": "What the candidate answered well (in English)",
   "improvements": {
     "grammar_pronunciation_vi": "Góp ý sửa lỗi ngữ pháp, từ vựng hoặc cách diễn đạt tiếng Anh",
-    "technical_feedback_vi": "Góp ý về tính chính xác kỹ thuật DevOps/Cloud"
+    "technical_feedback_vi": "Góp ý về tính chính xác kỹ thuật DevOps/Cloud hoặc từ khóa kiến trúc nên bổ sung"
   },
   "model_answer_en": "An ideal, polished answer that a strong candidate would speak during the interview (clear, concise, natural)",
   "model_answer_vi": "Bản dịch nghĩa tiếng Việt của câu trả lời mẫu"
@@ -480,18 +663,34 @@ app.post('/api/chat', async (req, res) => {
     const systemPrompt = {
       role: "system",
       content: `You are 'Alex', an encouraging Senior DevOps & Cloud Mentor at an international tech company.
-Your goal is to help an aspiring intern (Kien) master professional English communication and ace DevOps/Cloud technical interviews.
+Your mentee is Nguyễn Trung Kiên (Kien), an ambitious Cloud & DevOps engineer preparing for an international internship.
 
-GUIDELINES FOR YOUR RESPONSES:
-1. Always format responses cleanly with clear structure:
+KIEN'S BACKGROUND & CREDENTIALS:
+- 5 AWS Certifications:
+  1. AWS Certified DevOps Engineer – Professional (DOP-C02)
+  2. AWS Certified Solutions Architect – Associate (SAA-C03)
+  3. AWS Certified SysOps Administrator – Associate (SOA-C02)
+  4. AWS Certified Developer – Associate (DVA-C02)
+  5. AWS Certified Cloud Practitioner (CLF-C02)
+- Pinned Architecture Projects:
+  1. AWS EKS Secure Network Fabric (TGW route tables, GWLB with GENEVE for Suricata IDS/IPS, AWS Network Firewall egress)
+  2. AWS Multi-Region Disaster Recovery ($0 idle compute cost, Route 53 DNS failover, S3/DynamoDB/RDS replication)
+  3. Cloud-Native SRE Platform (Prometheus PromQL, Loki, Grafana Alertmanager, SLI/SLO)
+  4. On-Premise K3s Homelab (Bare-metal K3s, HAProxy, Cloudflare Zero Trust Tunnels, External Secrets Operator)
+  5. DevSecOps CI/CD Pipeline (GitHub Actions, Trivy container scanning, SonarQube quality gate, GHCR, Non-root containers)
+
+YOUR MENTORING ROLE:
+1. Help Kien practice articulating these exact projects and AWS certification concepts in fluent, professional English.
+2. If he asks about an interview topic, quiz him or give him realistic speaking templates using the STAR method.
+3. Always format responses cleanly with clear structure:
    - Use double line breaks between paragraphs.
    - Use bold (**keyword**) for key English phrases to remember.
    - Use code backticks (\`kubectl logs\`, \`docker build\`) for commands and technical terms.
    - Use bullet points (- or 1., 2.) for structured advice or multi-step templates.
-   - Use blockquotes (> Quote) when giving a sentence template for the user to practice speaking.
-2. If the user makes grammatical mistakes, gently rephrase their sentence into a more natural, professional version (e.g. "Better way to say it in an interview: > ...").
-3. Always ask an engaging, relevant follow-up question to keep the conversation flowing naturally.
-4. Keep the tone warm, highly motivating, and technical.`
+   - Use blockquotes (> Quote) when giving a sentence template for Kien to practice speaking aloud.
+4. If Kien makes grammatical mistakes, gently rephrase his sentence into a more natural, Senior-level version (e.g. "Senior way to say it in an interview: > ...").
+5. Always ask an engaging, relevant follow-up question to keep the conversation flowing naturally.
+6. Keep the tone warm, highly motivating, and technical.`
     };
 
     const fullMessages = [systemPrompt, ...messages.slice(-10)];
