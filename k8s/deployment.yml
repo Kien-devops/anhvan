@@ -21,6 +21,8 @@ spec:
       labels:
         app: anhvan
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: anhvan
           image: ghcr.io/kien-devops/anhvan:latest
