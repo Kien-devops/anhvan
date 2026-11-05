@@ -10,7 +10,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=2.4.0">
+  <link rel="stylesheet" href="style.css?v=2.5.0">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-['Plus_Jakarta_Sans'] antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -229,7 +229,7 @@
               <i class="fa-solid fa-wand-magic-sparkles"></i>
               <span>💡 Gen câu gợi ý</span>
             </button>
-            <button onclick="speakText(document.getElementById('interview-question-text').innerText)" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-2 transition-colors" title="Nghe phát âm câu hỏi">
+            <button onclick="toggleSpeakQuestion()" id="btn-speak-question" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-2 transition-all border border-slate-700 shadow-sm" title="Bấm để nghe, bấm lần nữa để dừng">
               <i class="fa-solid fa-volume-high text-indigo-400"></i>
               <span>Nghe câu hỏi</span>
             </button>
@@ -357,9 +357,9 @@
 
     <!-- 4. TAB: MENTOR CHAT -->
     <section id="view-chat" class="tab-content hidden space-y-4">
-      <div class="bg-slate-900/40 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+      <div class="bg-slate-900/40 p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shrink-0">
             <i class="fa-solid fa-user-astronaut"></i>
           </div>
           <div>
@@ -367,12 +367,50 @@
             <p class="text-xs text-slate-400">Trò chuyện luyện phản xạ tiếng Anh, hỏi đáp kỹ thuật & phỏng vấn</p>
           </div>
         </div>
-        <button onclick="clearChatHistory()" class="text-xs text-slate-400 hover:text-rose-400 transition-colors">
-          <i class="fa-solid fa-trash-can mr-1"></i> Xóa hội thoại
-        </button>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Chủ đề Mentor Chat -->
+          <select id="chat-topic" onchange="onChatTopicChange()" class="bg-slate-800 text-slate-200 text-xs rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-indigo-500 font-medium max-w-[320px]">
+            <optgroup label="⚙️ Nền Tảng Kỹ Thuật">
+              <option value="k8s">☸️ Kubernetes & Container Troubleshooting</option>
+              <option value="aws">☁️ AWS Cloud & 5 Certifications (DOP, SAA, SOA...)</option>
+              <option value="cicd">🚀 CI/CD, GitOps & DevSecOps Pipelines</option>
+              <option value="linux">🐧 Linux Internals & Network Troubleshooting</option>
+            </optgroup>
+            <optgroup label="📂 5 Dự Án Thực Tế Của Kiên">
+              <option value="project_network">🛡️ Project: AWS EKS Secure Network Fabric</option>
+              <option value="project_dr">🔄 Project: Multi-Region Disaster Recovery ($0 Standby)</option>
+              <option value="project_sre">📊 Project: Cloud-Native SRE & Observability</option>
+              <option value="project_k3s">☸️ Project: On-Premise K3s Homelab & Tunnels</option>
+              <option value="project_devsecops">🚀 Project: DevSecOps CI/CD Pipeline</option>
+            </optgroup>
+            <optgroup label="💬 Kỹ Năng Mềm & Phỏng Vấn">
+              <option value="mock_interview">🎯 Luyện Phỏng Vấn 1-on-1 (Interactive Mock)</option>
+              <option value="standup">📋 Luyện Báo Cáo Daily Standup & Meeting</option>
+              <option value="incident">🚨 Giả Lập Xử Lý Sự Cố Production (Incident Drill)</option>
+            </optgroup>
+          </select>
+
+          <button onclick="clearChatHistory()" class="px-3 py-2 rounded-xl text-xs text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors shrink-0" title="Làm mới cuộc trò chuyện">
+            <i class="fa-solid fa-rotate-left mr-1"></i> Làm mới chat
+          </button>
+        </div>
       </div>
 
-      <div id="chat-messages" class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 h-[480px] overflow-y-auto space-y-4">
+      <!-- Quick Suggestion Chips for Chat -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt text-amber-400"></i> Gợi ý câu hỏi nhanh theo chủ đề:
+          </span>
+          <span class="text-[11px] text-slate-500">Bấm để chat ngay</span>
+        </div>
+        <div id="chat-quick-chips" class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div id="chat-messages" class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 h-[460px] overflow-y-auto space-y-4">
         <div class="flex items-start space-x-3">
           <div class="w-8 h-8 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xs shrink-0">
             <i class="fa-solid fa-robot"></i>
@@ -405,7 +443,7 @@
     </div>
   </footer>
 
-  <script src="app.js?v=2.4.0"></script>
+  <script src="app.js?v=2.5.0"></script>
 </body>
 </html>
 

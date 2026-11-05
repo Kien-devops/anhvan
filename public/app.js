@@ -18,28 +18,109 @@ function switchTab(tabId) {
 }
 
 // ----------------------------------------------------
-// 1. Text-To-Speech (Phát âm giọng chuẩn bản xứ)
+// 1. Text-To-Speech (Bấm nghe thì nghe, bấm dừng thì dừng)
 // ----------------------------------------------------
-function speakText(text) {
+let currentSpeakingText = null;
+let currentSpeakingButton = null;
+
+function toggleSpeak(text, btnElement) {
   if (!('speechSynthesis' in window)) {
     alert("Trình duyệt của bạn không hỗ trợ Text-to-Speech.");
     return;
   }
-  window.speechSynthesis.cancel(); // Stop any ongoing speech
 
-  const utterance = new SpeechSynthesisUtterance(text);
+  // If already speaking
+  if (window.speechSynthesis.speaking) {
+    const isSameButton = currentSpeakingButton === btnElement;
+    const isSameText = currentSpeakingText === text;
+
+    // Stop speaking immediately
+    window.speechSynthesis.cancel();
+    if (currentSpeakingButton) {
+      resetSpeakingButton(currentSpeakingButton);
+    }
+
+    // If user clicked the active speaking button or same text, we STOP and return!
+    if (isSameButton || isSameText) {
+      currentSpeakingText = null;
+      currentSpeakingButton = null;
+      return;
+    }
+  }
+
+  // Start new speech
+  window.speechSynthesis.cancel();
+  if (currentSpeakingButton) {
+    resetSpeakingButton(currentSpeakingButton);
+  }
+
+  currentSpeakingText = text;
+  currentSpeakingButton = btnElement;
+
+  if (btnElement) {
+    if (!btnElement.dataset.origHtml) {
+      btnElement.dataset.origHtml = btnElement.innerHTML;
+    }
+    const hasSpan = btnElement.querySelector('span');
+    if (hasSpan) {
+      btnElement.innerHTML = `<i class="fa-solid fa-circle-stop text-rose-400 animate-pulse text-xs"></i> <span class="text-rose-300 font-bold">Dừng đọc</span>`;
+    } else {
+      btnElement.innerHTML = `<i class="fa-solid fa-circle-stop text-rose-400 animate-pulse text-xs"></i>`;
+    }
+    btnElement.classList.add('border-rose-500/50', 'bg-rose-950/20');
+  }
+
+  const cleanText = text.replace(/[#*`_>\[\]]/g, '').replace(/["']/g, ' ').replace(/\n+/g, ' ').trim();
+  const utterance = new SpeechSynthesisUtterance(cleanText);
   utterance.lang = 'en-US';
-  utterance.rate = 0.92; // Slightly natural pace for technical terms
+  utterance.rate = 0.92;
   utterance.pitch = 1.0;
 
-  // Prefer US English natural voices if available
   const voices = window.speechSynthesis.getVoices();
   const enVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha')));
   if (enVoice) {
     utterance.voice = enVoice;
   }
 
+  utterance.onend = () => {
+    if (btnElement) resetSpeakingButton(btnElement);
+    if (currentSpeakingButton === btnElement) {
+      currentSpeakingButton = null;
+      currentSpeakingText = null;
+    }
+  };
+
+  utterance.onerror = () => {
+    if (btnElement) resetSpeakingButton(btnElement);
+    if (currentSpeakingButton === btnElement) {
+      currentSpeakingButton = null;
+      currentSpeakingText = null;
+    }
+  };
+
   window.speechSynthesis.speak(utterance);
+}
+
+function resetSpeakingButton(btnElement) {
+  if (!btnElement) return;
+  if (btnElement.dataset.origHtml) {
+    btnElement.innerHTML = btnElement.dataset.origHtml;
+  }
+  btnElement.classList.remove('border-rose-500/50', 'bg-rose-950/20');
+}
+
+function toggleSpeakQuestion() {
+  const textEl = document.getElementById('interview-question-text');
+  const text = textEl ? textEl.innerText.replace(/"/g, '').trim() : '';
+  const btn = document.getElementById('btn-speak-question');
+  if (text) {
+    toggleSpeak(text, btn);
+  }
+}
+
+// Backward compatibility alias (supports toggleSpeak)
+function speakText(text, btnElement = null) {
+  toggleSpeak(text, btnElement);
 }
 
 // ----------------------------------------------------
@@ -221,7 +302,7 @@ function renderVocabCards(list) {
               <i class="fa-solid fa-check"></i>
               <span>${isLearned ? 'Đã học' : 'Học từ này'}</span>
             </button>
-            <button onclick="speakText('${item.term.replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="Nghe phát âm">
+            <button onclick="toggleSpeak('${item.term.replace(/'/g, "\\'")}', this)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white flex items-center justify-center transition-colors border border-transparent" title="Bấm nghe phát âm, bấm lần nữa để dừng">
               <i class="fa-solid fa-volume-high text-xs"></i>
             </button>
           </div>
@@ -246,8 +327,8 @@ function renderVocabCards(list) {
       </div>
 
       <div class="pt-4 flex justify-end">
-        <button onclick="speakText('${item.example.replace(/'/g, "\\'")}')" class="text-xs text-slate-400 hover:text-indigo-300 flex items-center gap-1.5 transition-colors">
-          <i class="fa-solid fa-play text-[10px]"></i> Nghe ví dụ
+        <button onclick="toggleSpeak('${item.example.replace(/'/g, "\\'")}', this)" class="text-xs text-slate-400 hover:text-indigo-300 flex items-center gap-1.5 transition-colors" title="Bấm nghe ví dụ, bấm lần nữa để dừng">
+          <i class="fa-solid fa-play text-[10px]"></i> <span>Nghe ví dụ</span>
         </button>
       </div>
     </div>
@@ -312,7 +393,7 @@ function renderLearnedVocab() {
             ${item.category || 'DevOps'}
           </span>
           <div class="flex items-center space-x-1">
-            <button onclick="speakText('${item.term.replace(/'/g, "\\'")}')" class="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white" title="Nghe">
+            <button onclick="toggleSpeak('${item.term.replace(/'/g, "\\'")}', this)" class="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white" title="Bấm nghe, bấm lần nữa để dừng">
               <i class="fa-solid fa-volume-high text-xs"></i>
             </button>
             <button onclick="deleteLearnedVocab('${item.term.replace(/'/g, "\\'")}')" class="p-1.5 rounded hover:bg-rose-500/20 text-slate-500 hover:text-rose-400" title="Xóa khỏi kho đã học">
@@ -379,8 +460,8 @@ function renderInterviewHistory() {
           <div class="p-3 bg-indigo-950/20 border border-indigo-500/20 rounded-lg">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[11px] font-bold text-indigo-300 uppercase">Câu trả lời mẫu chuẩn:</span>
-              <button onclick="speakText('${item.model_answer_en.replace(/'/g, "\\'")}')" class="text-[10px] text-indigo-400 hover:text-indigo-200 flex items-center gap-1">
-                <i class="fa-solid fa-volume-high"></i> Nghe
+              <button onclick="toggleSpeak('${item.model_answer_en.replace(/'/g, "\\'")}', this)" class="text-[10px] text-indigo-400 hover:text-indigo-200 flex items-center gap-1" title="Bấm nghe, bấm lần nữa để dừng">
+                <i class="fa-solid fa-volume-high"></i> <span>Nghe</span>
               </button>
             </div>
             <p class="text-xs text-slate-200 font-mono italic">"${item.model_answer_en}"</p>
@@ -538,7 +619,7 @@ function renderPhrases(filter = 'all') {
           <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
             ${item.context}
           </span>
-          <button onclick="speakText('${item.en.replace(/'/g, "\\'")}')" class="p-2 rounded-lg bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white transition-colors" title="Nghe phát âm">
+          <button onclick="toggleSpeak('${item.en.replace(/'/g, "\\'")}', this)" class="p-2 rounded-lg bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white transition-colors border border-transparent" title="Bấm nghe phát âm, bấm lần nữa để dừng">
             <i class="fa-solid fa-volume-high text-xs"></i>
           </button>
         </div>
@@ -655,8 +736,8 @@ async function requestNewQuestion() {
         hintBox.innerHTML = '';
       }
 
-      // Auto pronounce new question
-      speakText(data.data.question);
+      // Speak new question and sync button state
+      toggleSpeakQuestion();
     } else {
       alert("Không thể đổi câu hỏi: " + (data.error || 'Vui lòng thử lại.'));
     }
@@ -732,8 +813,8 @@ async function requestQuestionHint() {
               <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
                 <i class="fa-solid fa-bullhorn"></i> Mẫu câu trả lời gợi ý (Starter Template):
               </span>
-              <button onclick="speakText('${h.starter_template_en.replace(/'/g, "\\'")}')" class="text-[11px] text-indigo-400 hover:text-indigo-200 flex items-center gap-1">
-                <i class="fa-solid fa-volume-high"></i> Nghe đọc mẫu
+              <button onclick="toggleSpeak('${h.starter_template_en.replace(/'/g, "\\'")}', this)" class="text-[11px] text-indigo-400 hover:text-indigo-200 flex items-center gap-1" title="Bấm nghe, bấm lần nữa để dừng">
+                <i class="fa-solid fa-volume-high"></i> <span>Nghe đọc mẫu</span>
               </button>
             </div>
             <p class="text-xs text-slate-100 font-['JetBrains_Mono'] italic bg-slate-950/70 p-2 rounded border border-slate-800">
@@ -872,8 +953,8 @@ function renderEvaluationResult(evalData) {
           <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
             <i class="fa-solid fa-star text-amber-400"></i> Câu trả lời mẫu chuẩn Senior (Model Answer)
           </span>
-          <button onclick="speakText('${evalData.model_answer_en.replace(/'/g, "\\'")}')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors">
-            <i class="fa-solid fa-volume-high"></i> Nghe phát âm mẫu
+          <button onclick="toggleSpeak('${evalData.model_answer_en.replace(/'/g, "\\'")}', this)" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all shadow-sm border border-transparent" title="Bấm nghe, bấm lần nữa để dừng">
+            <i class="fa-solid fa-volume-high"></i> <span>Nghe phát âm mẫu</span>
           </button>
         </div>
         <p class="text-sm font-semibold text-slate-100 font-['JetBrains_Mono'] leading-relaxed bg-slate-900/80 p-3 rounded-lg border border-slate-800">
@@ -890,12 +971,179 @@ function renderEvaluationResult(evalData) {
 // ----------------------------------------------------
 // 6. Mentor Chat
 // ----------------------------------------------------
+const CHAT_TOPIC_CONFIGS = {
+  k8s: {
+    name: "Kubernetes & Containers",
+    welcome: "Hey Kien! I'm ready to dive into **Kubernetes & Containers**! ☸️ We can discuss Pod lifecycle, CrashLoopBackOff troubleshooting, Ingress routing, or do a live mock interview quiz. What would you like to explore?",
+    chips: [
+      "Can you quiz me on Kubernetes Pod lifecycle?",
+      "How do I explain CrashLoopBackOff to an interviewer in English?",
+      "What is the difference between ClusterIP, NodePort, and Ingress?",
+      "How do you handle OOMKilled (Exit Code 137) in production?"
+    ]
+  },
+  aws: {
+    name: "AWS Cloud & 5 Certifications",
+    welcome: "Awesome, let's focus on **AWS Cloud & your 5 Certifications (DOP-C02, SAA, SOA, DVA, CLF)**! ☁️ What architectural pattern or scenario exam question shall we practice explaining in English?",
+    chips: [
+      "Quiz me on AWS DOP-C02 Blue/Green deployment strategies!",
+      "How do I explain Multi-AZ high availability in an interview?",
+      "Explain S3 lifecycle tiering for cost optimization.",
+      "How does Route 53 health check DNS failover work?"
+    ]
+  },
+  cicd: {
+    name: "CI/CD & DevSecOps Pipelines",
+    welcome: "Let's level up your **CI/CD, GitOps & DevSecOps** communication! 🚀 We can practice explaining GitHub Actions automation, Trivy vulnerability scans, or SonarQube quality gates. Where should we begin?",
+    chips: [
+      "How do I explain shift-left security in GitHub Actions?",
+      "Review my Docker multi-stage build optimization.",
+      "Explain the difference between Blue/Green and Canary.",
+      "How do you eliminate hardcoded secrets in CI/CD pipelines?"
+    ]
+  },
+  linux: {
+    name: "Linux Internals & Networking",
+    welcome: "Ready for **Linux Internals & Network Troubleshooting**! 🐧 We can practice diagnosing high load, investigating network drops with tcpdump, or explaining cgroups and container isolation in English.",
+    chips: [
+      "How do I explain Linux cgroups and namespaces to an interviewer?",
+      "Walk me through troubleshooting a high CPU & memory server.",
+      "How do you use tcpdump and netstat to debug network drops?",
+      "Explain the difference between soft links and hard links."
+    ]
+  },
+  project_network: {
+    name: "Project: AWS EKS Secure Network Fabric",
+    welcome: "Let's defend your signature project: **AWS EKS Secure Network Fabric**! 🛡️ We can practice explaining TGW segmentation, GWLB with GENEVE encapsulation, and Suricata IDS/IPS in professional English.",
+    chips: [
+      "Why did I choose GWLB with GENEVE over a traditional proxy?",
+      "Explain TGW route table isolation and symmetric routing.",
+      "How does AWS Network Firewall handle centralized egress?",
+      "Quiz me as an interviewer grilling my network fabric project!"
+    ]
+  },
+  project_dr: {
+    name: "Project: Multi-Region Disaster Recovery",
+    welcome: "Let's practice presenting your **AWS Multi-Region Disaster Recovery** platform ($0 standby compute cost)! 🔄 What key metrics or failover mechanisms would you like to practice speaking?",
+    chips: [
+      "How do I explain achieving $0 standby compute cost in English?",
+      "Explain our target RTO and RPO and how we measure them.",
+      "How do we replicate DynamoDB and S3 across AWS regions?",
+      "Ask me a tough interview question about my DR project!"
+    ]
+  },
+  project_sre: {
+    name: "Project: Cloud-Native SRE Platform",
+    welcome: "Observability time! 📊 Let's practice discussing your **Cloud-Native SRE Platform** with Prometheus, Loki, Grafana, and Alertmanager.",
+    chips: [
+      "How do I define and measure SLIs and SLOs in an interview?",
+      "Explain Prometheus rate() vs irate() and multi-burn-rate alerts.",
+      "How did you prevent high cardinality label issues in Loki?",
+      "Grill me on conducting a blameless postmortem in English!"
+    ]
+  },
+  project_k3s: {
+    name: "Project: On-Premise K3s Homelab",
+    welcome: "Let's talk about your **On-Premise K3s Homelab**! ☸️ We can practice explaining bare-metal cluster setup, Cloudflare Tunnels, and External Secrets Operator (ESO).",
+    chips: [
+      "How do I explain running bare-metal K3s vs AWS EKS?",
+      "How does Cloudflare Zero Trust Tunnel secure our homelab?",
+      "Explain how External Secrets Operator (ESO) syncs secrets.",
+      "Ask me a troubleshooting question about K3s worker nodes!"
+    ]
+  },
+  project_devsecops: {
+    name: "Project: DevSecOps CI/CD Pipeline",
+    welcome: "Security first! 🚀 Let's talk about your **DevSecOps CI/CD Pipeline** with Trivy scanning, SonarQube quality gates, and non-root container packaging.",
+    chips: [
+      "How do you integrate Trivy container scanning in GitHub Actions?",
+      "Explain our SonarQube quality gate rules and metrics.",
+      "Why is running as non-root critical for container security?",
+      "How do you handle critical CVEs in production releases?"
+    ]
+  },
+  mock_interview: {
+    name: "1-on-1 Interactive Mock Interview",
+    welcome: "Tech Lead mode activated! 🎯 I'll conduct a realistic 1-on-1 technical interview in English. I'll ask one question at a time, evaluate your response, and challenge you with follow-ups. Ready? Say 'I'm ready' or pick a starter below!",
+    chips: [
+      "Start a technical interview for a DevOps Intern position!",
+      "Ask me a challenging behavioral question using STAR method.",
+      "I'm ready. Grill me on Kubernetes and Linux networking!",
+      "Ask me a question about my AWS experience."
+    ]
+  },
+  standup: {
+    name: "Daily Standup & Workplace Communication",
+    welcome: "Let's polish your workplace English! 📋 We can practice your 3-point Daily Standup update (Yesterday, Today, Blockers), reporting an incident, or asking a Senior engineer for guidance.",
+    chips: [
+      "Help me formulate my 3-bullet standup update for today.",
+      "How do I report a blocker professionally in English?",
+      "How do I ask a Senior engineer for a 10-minute huddle?",
+      "Practice communicating a deployment delay to my team."
+    ]
+  },
+  incident: {
+    name: "Incident Drill & Production Outage",
+    welcome: "🚨 **INCIDENT DRILL ACTIVE!** You are on-call. A high-priority production alert just fired. We will roleplay the incident response in English, from triage to mitigation and postmortem. Are you ready?",
+    chips: [
+      "Simulate a sudden 502 Bad Gateway spike on production!",
+      "How do I send a clear outage announcement to stakeholders?",
+      "A worker node just transitioned to NotReady. What now?",
+      "Let's write a blameless postmortem for a failed deployment."
+    ]
+  }
+};
+
 let chatHistory = [];
+
+function onChatTopicChange() {
+  const select = document.getElementById('chat-topic');
+  const topicKey = select ? select.value : 'k8s';
+  const config = CHAT_TOPIC_CONFIGS[topicKey] || CHAT_TOPIC_CONFIGS.k8s;
+
+  // Render quick chips
+  renderChatChips(config.chips);
+
+  // Clear previous chat and set tailored welcome message
+  chatHistory = [{ role: 'assistant', content: config.welcome }];
+  const container = document.getElementById('chat-messages');
+  if (container) {
+    container.innerHTML = '';
+    appendChatMessage('assistant', config.welcome);
+  }
+}
+
+function renderChatChips(chips) {
+  const chipsContainer = document.getElementById('chat-quick-chips');
+  if (!chipsContainer) return;
+  if (!chips || chips.length === 0) {
+    chipsContainer.innerHTML = '';
+    return;
+  }
+
+  chipsContainer.innerHTML = chips.map(c => `
+    <button onclick="useQuickPrompt('${c.replace(/'/g, "\\'")}')" class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600/30 border border-slate-800 hover:border-indigo-500/50 text-slate-300 hover:text-indigo-200 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 shrink-0">
+      <i class="fa-regular fa-comment-dots text-indigo-400 text-[10px]"></i>
+      <span>${c}</span>
+    </button>
+  `).join('');
+}
+
+function useQuickPrompt(text) {
+  const input = document.getElementById('chat-input');
+  if (input) {
+    input.value = text;
+    sendChatMessage();
+  }
+}
 
 async function sendChatMessage() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
   if (!text) return;
+
+  const topicSelect = document.getElementById('chat-topic');
+  const activeTopic = topicSelect ? topicSelect.value : 'k8s';
 
   input.value = '';
   appendChatMessage('user', text);
@@ -908,7 +1156,10 @@ async function sendChatMessage() {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: chatHistory })
+      body: JSON.stringify({ 
+        messages: chatHistory,
+        topic: activeTopic
+      })
     });
     const data = await res.json();
     if (data.success && data.reply) {
@@ -950,8 +1201,8 @@ function appendChatMessage(role, content) {
       ${formattedContent}
       ${!isUser ? `
         <div class="mt-3 pt-2 border-t border-slate-800/80 flex justify-end">
-          <button onclick="speakText('${cleanSpeech.replace(/'/g, "\\'")}')" class="text-[11px] text-slate-400 hover:text-indigo-300 flex items-center gap-1.5 transition-colors">
-            <i class="fa-solid fa-volume-high text-[10px]"></i> Nghe phát âm
+          <button onclick="toggleSpeak('${cleanSpeech.replace(/'/g, "\\'")}', this)" class="text-[11px] text-slate-400 hover:text-indigo-300 flex items-center gap-1.5 transition-colors border border-transparent px-2 py-0.5 rounded" title="Bấm nghe, bấm lần nữa để dừng">
+            <i class="fa-solid fa-volume-high text-[10px]"></i> <span>Nghe phát âm</span>
           </button>
         </div>
       ` : ''}
@@ -963,14 +1214,17 @@ function appendChatMessage(role, content) {
 }
 
 function clearChatHistory() {
-  chatHistory = [];
+  const select = document.getElementById('chat-topic');
+  const topicKey = select ? select.value : 'k8s';
+  const config = CHAT_TOPIC_CONFIGS[topicKey] || CHAT_TOPIC_CONFIGS.k8s;
+  chatHistory = [{ role: 'assistant', content: config.welcome }];
   document.getElementById('chat-messages').innerHTML = `
     <div class="flex items-start space-x-3">
       <div class="w-8 h-8 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xs shrink-0">
         <i class="fa-solid fa-robot"></i>
       </div>
-      <div class="bg-slate-900 p-3.5 rounded-2xl rounded-tl-none border border-slate-800 text-sm max-w-[85%] text-slate-200">
-        Conversation cleared! How can I help you practice your DevOps English today?
+      <div class="bg-slate-900 p-3.5 rounded-2xl rounded-tl-none border border-slate-800 text-sm max-w-[85%] text-slate-200 chat-markdown">
+        ${typeof marked !== 'undefined' ? marked.parse(config.welcome) : config.welcome}
       </div>
     </div>
   `;
@@ -983,5 +1237,6 @@ window.addEventListener('DOMContentLoaded', () => {
   loadProgressData();
   loadDefaultVocab();
   renderPhrases('all');
+  onChatTopicChange();
 });
 
