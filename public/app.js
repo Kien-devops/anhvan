@@ -1283,9 +1283,208 @@ function clearChatHistory() {
 }
 
 // ----------------------------------------------------
+// 8. Authentication & Google OAuth & Whitelist Management
+// ----------------------------------------------------
+let currentUser = null;
+
+async function checkAuthStatus() {
+  const container = document.getElementById('auth-container');
+  if (!container) return;
+
+  try {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json();
+    if (data.authenticated && data.user) {
+      currentUser = data.user;
+      renderAuthUser(currentUser);
+    } else {
+      currentUser = null;
+      renderAuthGuest();
+    }
+  } catch (err) {
+    console.error('Error checking auth:', err);
+    renderAuthGuest();
+  }
+}
+
+function renderAuthGuest() {
+  const container = document.getElementById('auth-container');
+  if (!container) return;
+  container.innerHTML = `
+    <a href="/auth/google" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border-2 border-[#151515] shadow-[2px_2px_0px_#151515] hover:bg-[#5294ff] hover:text-white font-black text-xs transition cursor-pointer" title="Đăng nhập tài khoản Google">
+      <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+      </svg>
+      <span>Đăng Nhập Google</span>
+    </a>
+  `;
+}
+
+function renderAuthUser(user) {
+  const container = document.getElementById('auth-container');
+  if (!container) return;
+
+  const avatar = user.picture || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email);
+  const name = user.name || user.email.split('@')[0];
+
+  container.innerHTML = `
+    <div class="flex items-center space-x-2">
+      <div class="flex items-center space-x-1.5 bg-white px-2.5 py-1 rounded-xl border-2 border-[#151515] shadow-[2px_2px_0px_#151515]">
+        <img src="${avatar}" alt="${name}" class="w-6 h-6 rounded-full border border-[#151515]" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=user'">
+        <span class="text-xs font-black text-[#151515] max-w-[100px] sm:max-w-[140px] truncate" title="${user.email}">${name}</span>
+        ${user.isAdmin ? '<span class="bg-[#f4d77c] text-[#151515] text-[9px] font-black px-1.5 py-0.5 rounded border border-[#151515]">ADMIN</span>' : ''}
+      </div>
+
+      ${user.isAdmin ? `
+        <button onclick="openWhitelistModal()" class="px-2.5 py-1.5 rounded-xl bg-[#f4d77c] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] hover:bg-yellow-300 text-[#151515] font-black text-xs flex items-center gap-1.5 transition" title="Quản lý danh sách Email Whitelist">
+          <i class="fa-solid fa-users-gear"></i>
+          <span class="hidden md:inline">Whitelist</span>
+        </button>
+      ` : ''}
+
+      <a href="/auth/logout" class="px-2.5 py-1.5 rounded-xl bg-[#ff6b6b] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] hover:bg-red-400 text-white font-black text-xs flex items-center gap-1.5 transition" title="Đăng xuất">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </a>
+    </div>
+  `;
+}
+
+function checkUrlAuthErrors() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('auth_error') === 'unauthorized_email') {
+    const unauthEmail = params.get('unauth_email') || 'bạn';
+    showUnauthModal(unauthEmail);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
+function showUnauthModal(email) {
+  const modal = document.getElementById('unauth-modal');
+  const display = document.getElementById('unauth-email-display');
+  if (display) display.textContent = email;
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeUnauthModal() {
+  const modal = document.getElementById('unauth-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function openWhitelistModal() {
+  const modal = document.getElementById('whitelist-modal');
+  if (modal) modal.classList.remove('hidden');
+  await loadAdminWhitelist();
+}
+
+function closeWhitelistModal() {
+  const modal = document.getElementById('whitelist-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function loadAdminWhitelist() {
+  const container = document.getElementById('whitelist-items-container');
+  if (!container) return;
+
+  try {
+    const res = await fetch('/api/admin/whitelist');
+    const data = await res.json();
+
+    if (!data.success) {
+      container.innerHTML = `<div class="p-3 text-xs text-red-600 bg-red-50 rounded-xl border border-red-200">${data.error || 'Lỗi khi tải Whitelist.'}</div>`;
+      return;
+    }
+
+    const admins = data.admins || [];
+    const list = data.whitelist || [];
+
+    if (list.length === 0) {
+      container.innerHTML = `<div class="text-center py-4 text-xs text-slate-500 font-bold">Chưa có email nào trong danh sách.</div>`;
+      return;
+    }
+
+    container.innerHTML = list.map(email => {
+      const isSuperAdmin = admins.includes(email.toLowerCase().trim());
+      return `
+        <div class="flex items-center justify-between p-2.5 bg-white border-2 border-[#151515] rounded-xl shadow-[2px_2px_0px_#151515]">
+          <div class="flex items-center gap-2 truncate">
+            <i class="fa-solid ${isSuperAdmin ? 'fa-crown text-amber-500' : 'fa-envelope text-slate-400'} text-xs"></i>
+            <span class="text-xs font-black text-[#151515] truncate font-mono">${email}</span>
+            ${isSuperAdmin ? '<span class="text-[9px] bg-[#f4d77c] border border-[#151515] px-1.5 py-0.5 rounded font-black">SUPER ADMIN</span>' : ''}
+          </div>
+          ${!isSuperAdmin ? `
+            <button onclick="deleteWhitelistEmail('${email}')" class="px-2 py-1 bg-red-100 hover:bg-red-500 hover:text-white text-red-700 text-[11px] font-bold rounded-lg border border-[#151515] transition" title="Xóa quyền truy cập">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          ` : `
+            <span class="text-[10px] text-slate-400 font-semibold px-2">Cố định</span>
+          `}
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Error fetching whitelist:', err);
+    container.innerHTML = `<div class="p-3 text-xs text-red-600 bg-red-50 rounded-xl border border-red-200">Không thể kết nối đến server.</div>`;
+  }
+}
+
+async function addWhitelistEmail() {
+  const input = document.getElementById('whitelist-new-email');
+  if (!input) return;
+  const email = (input.value || '').trim();
+  if (!email || !email.includes('@')) {
+    alert('Vui lòng nhập định dạng email hợp lệ (vd: name@gmail.com).');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/admin/whitelist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (!data.success) {
+      alert(data.error || 'Không thể thêm email.');
+      return;
+    }
+    input.value = '';
+    await loadAdminWhitelist();
+  } catch (err) {
+    console.error('Error adding whitelist email:', err);
+    alert('Lỗi kết nối khi thêm email.');
+  }
+}
+
+async function deleteWhitelistEmail(email) {
+  if (!confirm(`Bạn có chắc chắn muốn xóa email "${email}" khỏi danh sách Whitelist? Người này sẽ không thể đăng nhập nữa.`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/admin/whitelist/${encodeURIComponent(email)}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+    if (!data.success) {
+      alert(data.error || 'Không thể xóa email.');
+      return;
+    }
+    await loadAdminWhitelist();
+  } catch (err) {
+    console.error('Error deleting whitelist email:', err);
+    alert('Lỗi kết nối khi xóa email.');
+  }
+}
+
+// ----------------------------------------------------
 // Initialization
 // ----------------------------------------------------
 window.addEventListener('DOMContentLoaded', () => {
+  checkUrlAuthErrors();
+  checkAuthStatus();
   loadProgressData();
   loadDefaultVocab();
   renderPhrases('all');

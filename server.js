@@ -2,25 +2,89 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const ROUTER_URL = process.env.ROUTER_URL || 'https://9router.onprem.site/v1';
-const ROUTER_KEY = process.env.ROUTER_KEY || 'sk-a7e6ec7fa26ceade-ii35lw-eb70a6ee';
+const ROUTER_KEY = process.env.ROUTER_KEY || '';
 const ROUTER_MODEL = process.env.ROUTER_MODEL || 'gpt-5.6-sol';
+
+// Google OAuth & Session Secrets (Injected from Kubernetes Secret anhvan-secrets)
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+const APP_BASE_URL = (process.env.APP_BASE_URL || 'https://anhvan.onprem.site').replace(/\/+$/, '');
+const SESSION_SECRET = process.env.SESSION_SECRET || 'anhvan_devops_secret_session_2026_uit';
 
 // Persistent storage directory on server-tang4 (hostPath mounted to /app/data)
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
-const DB_FILE = path.join(DATA_DIR, 'progress.json');
 
-function readProgress() {
+// ----------------------------------------------------
+// Database: Whitelist of Allowed Emails (server-tang4)
+// ----------------------------------------------------
+const WHITELIST_FILE = path.join(DATA_DIR, 'whitelist.json');
+
+const ADMIN_EMAILS = [
+  'kien07493@gmail.com',
+  '24520885@gm.uit.edu.vn'
+];
+
+function isUserAdmin(email) {
+  if (!email) return false;
+  return ADMIN_EMAILS.includes(email.toLowerCase().trim());
+}
+
+function readWhitelist() {
   try {
-    if (fs.existsSync(DB_FILE)) {
-      const content = fs.readFileSync(DB_FILE, 'utf-8');
+    if (fs.existsSync(WHITELIST_FILE)) {
+      const content = fs.readFileSync(WHITELIST_FILE, 'utf-8');
+      const list = JSON.parse(content);
+      if (Array.isArray(list) && list.length > 0) return list;
+    }
+  } catch (e) {
+    console.error('Error reading whitelist file:', e);
+  }
+  // Default initial whitelist with Kien's 2 emails
+  const initial = [
+    'kien07493@gmail.com',
+    '24520885@gm.uit.edu.vn'
+  ];
+  saveWhitelist(initial);
+  return initial;
+}
+
+function saveWhitelist(list) {
+  try {
+    fs.writeFileSync(WHITELIST_FILE, JSON.stringify(list, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error saving whitelist file:', e);
+  }
+}
+
+// ----------------------------------------------------
+// Database: User-Isolated Progress (server-tang4)
+// ----------------------------------------------------
+function getUserDbFile(email) {
+  if (!email || email === 'guest') return path.join(DATA_DIR, 'progress.json');
+  const sanitized = email.toLowerCase().replace(/[^a-zA-Z0-9._-]/g, '_');
+  return path.join(DATA_DIR, `progress_${sanitized}.json`);
+}
+
+function readProgress(email) {
+  try {
+    const userFile = getUserDbFile(email);
+    if (fs.existsSync(userFile)) {
+      const content = fs.readFileSync(userFile, 'utf-8');
+      return JSON.parse(content);
+    }
+    // Fallback to default progress if migrating
+    const defaultFile = path.join(DATA_DIR, 'progress.json');
+    if (fs.existsSync(defaultFile)) {
+      const content = fs.readFileSync(defaultFile, 'utf-8');
       return JSON.parse(content);
     }
   } catch (err) {
@@ -29,18 +93,59 @@ function readProgress() {
   return { learnedVocab: [], interviewHistory: [] };
 }
 
-function saveProgress(data) {
+function saveProgress(email, data) {
   try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    const userFile = getUserDbFile(email);
+    fs.writeFileSync(userFile, JSON.stringify(data, null, 2), 'utf-8');
   } catch (err) {
     console.error('Error saving progress file:', err);
+  }
+}
+
+// ----------------------------------------------------
+// Session Security & Signed Cookies (HMAC-SHA256)
+// ----------------------------------------------------
+function signSession(data) {
+  const jsonStr = JSON.stringify(data);
+  const base64 = Buffer.from(jsonStr).toString('base64url');
+  const signature = crypto.createHmac('sha256', SESSION_SECRET).update(base64).digest('base64url');
+  return `${base64}.${signature}`;
+}
+
+function verifySession(token) {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const [base64, sig] = parts;
+  const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(base64).digest('base64url');
+  if (sig !== expectedSig) return null;
+  try {
+    const jsonStr = Buffer.from(base64, 'base64url').toString('utf-8');
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    return null;
   }
 }
 
 app.use(cors());
 app.use(express.json());
 
-// Strict no-cache headers for static files to prevent browser caching stale scripts
+// Custom lightweight cookie parser & auth context middleware
+app.use((req, res, next) => {
+  const cookieHeader = req.headers.cookie;
+  req.cookies = {};
+  if (cookieHeader) {
+    cookieHeader.split(';').forEach(c => {
+      const [k, ...v] = c.trim().split('=');
+      if (k) req.cookies[k] = decodeURIComponent(v.join('='));
+    });
+  }
+  const token = req.cookies['anhvan_session'];
+  req.user = verifySession(token);
+  next();
+});
+
+// Strict no-cache headers for static files
 app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: (res) => {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -74,6 +179,137 @@ async function callLLM(messages, temperature = 0.7) {
   const data = await response.json();
   return data.choices[0].message.content;
 }
+
+// ----------------------------------------------------
+// Google OAuth 2.0 & Whitelist Management Endpoints
+// ----------------------------------------------------
+app.get('/auth/google', (req, res) => {
+  const redirectUri = `${APP_BASE_URL}/auth/google/callback`;
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: redirectUri,
+    response_type: 'code',
+    scope: 'openid email profile',
+    access_type: 'online',
+    prompt: 'select_account'
+  });
+  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
+});
+
+app.get('/auth/google/callback', async (req, res) => {
+  try {
+    const { code, error } = req.query;
+    if (error || !code) {
+      return res.redirect('/?auth_error=' + encodeURIComponent(error || 'cancelled'));
+    }
+
+    const redirectUri = `${APP_BASE_URL}/auth/google/callback`;
+
+    // 1. Exchange auth code for Google access token
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code'
+      })
+    });
+
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) {
+      console.error('Failed to obtain Google access token:', tokenData);
+      return res.redirect('/?auth_error=token_failed');
+    }
+
+    // 2. Fetch user profile from Google UserInfo
+    const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    const profile = await profileRes.json();
+    const userEmail = (profile.email || '').toLowerCase().trim();
+
+    if (!userEmail) {
+      return res.redirect('/?auth_error=no_email');
+    }
+
+    // 3. Verify against Whitelist Database on server-tang4
+    const whitelist = readWhitelist();
+    const isAllowed = whitelist.some(e => e.toLowerCase().trim() === userEmail);
+
+    if (!isAllowed) {
+      return res.redirect(`/?auth_error=unauthorized_email&unauth_email=${encodeURIComponent(userEmail)}`);
+    }
+
+    // 4. Success: Sign session cookie
+    const sessionUser = {
+      email: userEmail,
+      name: profile.name || userEmail.split('@')[0],
+      picture: profile.picture || '',
+      isAdmin: isUserAdmin(userEmail),
+      loginAt: Date.now()
+    };
+
+    const sessionToken = signSession(sessionUser);
+    res.setHeader('Set-Cookie', `anhvan_session=${encodeURIComponent(sessionToken)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30 * 86400}`);
+    res.redirect('/');
+  } catch (err) {
+    console.error('Google OAuth callback error:', err);
+    res.redirect('/?auth_error=' + encodeURIComponent(err.message));
+  }
+});
+
+app.get('/auth/logout', (req, res) => {
+  res.setHeader('Set-Cookie', 'anhvan_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
+  res.redirect('/');
+});
+
+app.get('/api/auth/me', (req, res) => {
+  res.json({
+    authenticated: !!req.user,
+    user: req.user || null
+  });
+});
+
+app.get('/api/admin/whitelist', (req, res) => {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({ success: false, error: "Chỉ Admin mới có quyền xem danh sách Whitelist." });
+  }
+  const list = readWhitelist();
+  res.json({ success: true, whitelist: list, admins: ADMIN_EMAILS });
+});
+
+app.post('/api/admin/whitelist', (req, res) => {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({ success: false, error: "Chỉ Admin mới có quyền thêm email vào Whitelist." });
+  }
+  const email = (req.body.email || '').toLowerCase().trim();
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ success: false, error: "Email không hợp lệ." });
+  }
+  const list = readWhitelist();
+  if (!list.includes(email)) {
+    list.push(email);
+    saveWhitelist(list);
+  }
+  res.json({ success: true, whitelist: list });
+});
+
+app.delete('/api/admin/whitelist/:email', (req, res) => {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({ success: false, error: "Chỉ Admin mới có quyền xóa email." });
+  }
+  const email = decodeURIComponent(req.params.email).toLowerCase().trim();
+  if (ADMIN_EMAILS.includes(email)) {
+    return res.status(400).json({ success: false, error: "Không thể xóa email Admin mặc định." });
+  }
+  let list = readWhitelist();
+  list = list.filter(e => e.toLowerCase().trim() !== email);
+  saveWhitelist(list);
+  res.json({ success: true, whitelist: list });
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -589,7 +825,8 @@ Return ONLY a valid JSON object with NO markdown backticks:
 
     // Automatically persist interview practice to persistent database on server-tang4
     try {
-      const progress = readProgress();
+      const userEmail = req.user ? req.user.email : 'guest';
+      const progress = readProgress(userEmail);
       if (!Array.isArray(progress.interviewHistory)) progress.interviewHistory = [];
       const historyItem = {
         id: 'int_' + Date.now(),
@@ -612,7 +849,7 @@ Return ONLY a valid JSON object with NO markdown backticks:
       if (progress.interviewHistory.length > 50) {
         progress.interviewHistory = progress.interviewHistory.slice(0, 50);
       }
-      saveProgress(progress);
+      saveProgress(userEmail, progress);
     } catch (saveErr) {
       console.error('Failed to auto-save interview progress:', saveErr);
     }
@@ -626,7 +863,8 @@ Return ONLY a valid JSON object with NO markdown backticks:
 
 // 5. Persistent Progress Endpoints (server-tang4 storage)
 app.get('/api/progress', (req, res) => {
-  const data = readProgress();
+  const userEmail = req.user ? req.user.email : 'guest';
+  const data = readProgress(userEmail);
   res.json({ success: true, data: data });
 });
 
@@ -637,7 +875,8 @@ app.post('/api/progress/vocab/toggle', (req, res) => {
       return res.status(400).json({ success: false, error: "Term is required" });
     }
 
-    const progress = readProgress();
+    const userEmail = req.user ? req.user.email : 'guest';
+    const progress = readProgress(userEmail);
     if (!Array.isArray(progress.learnedVocab)) progress.learnedVocab = [];
 
     const existingIndex = progress.learnedVocab.findIndex(v => v.term.toLowerCase() === item.term.toLowerCase());
@@ -661,7 +900,7 @@ app.post('/api/progress/vocab/toggle', (req, res) => {
       isLearned = true;
     }
 
-    saveProgress(progress);
+    saveProgress(userEmail, progress);
     res.json({ success: true, isLearned: isLearned, totalLearned: progress.learnedVocab.length, data: progress.learnedVocab });
   } catch (err) {
     console.error('Error toggling vocab progress:', err);
@@ -671,11 +910,12 @@ app.post('/api/progress/vocab/toggle', (req, res) => {
 
 app.delete('/api/progress/vocab/:term', (req, res) => {
   try {
+    const userEmail = req.user ? req.user.email : 'guest';
     const term = decodeURIComponent(req.params.term);
-    const progress = readProgress();
+    const progress = readProgress(userEmail);
     if (Array.isArray(progress.learnedVocab)) {
       progress.learnedVocab = progress.learnedVocab.filter(v => v.term.toLowerCase() !== term.toLowerCase());
-      saveProgress(progress);
+      saveProgress(userEmail, progress);
     }
     res.json({ success: true, data: progress.learnedVocab });
   } catch (err) {
@@ -685,11 +925,12 @@ app.delete('/api/progress/vocab/:term', (req, res) => {
 
 app.delete('/api/progress/interview/:id', (req, res) => {
   try {
+    const userEmail = req.user ? req.user.email : 'guest';
     const id = req.params.id;
-    const progress = readProgress();
+    const progress = readProgress(userEmail);
     if (Array.isArray(progress.interviewHistory)) {
       progress.interviewHistory = progress.interviewHistory.filter(h => h.id !== id);
-      saveProgress(progress);
+      saveProgress(userEmail, progress);
     }
     res.json({ success: true, data: progress.interviewHistory });
   } catch (err) {

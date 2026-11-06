@@ -44,6 +44,23 @@ spec:
                   key: router-key
             - name: ROUTER_MODEL
               value: "gpt-5.6-sol"
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: anhvan-secrets
+                  key: google-client-id
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: anhvan-secrets
+                  key: google-client-secret
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: anhvan-secrets
+                  key: session-secret
+            - name: APP_BASE_URL
+              value: "https://anhvan.onprem.site"
             - name: NODE_ENV
               value: "production"
             - name: DATA_DIR
