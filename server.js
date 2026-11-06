@@ -322,6 +322,23 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Authentication Guard Middleware: Only authenticated & whitelisted users can access APIs
+function requireAuth(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: 'Vui lòng đăng nhập bằng tài khoản Google đã được cấp quyền để tiếp tục.'
+    });
+  }
+  next();
+}
+
+app.use('/api/vocab', requireAuth);
+app.use('/api/phrases', requireAuth);
+app.use('/api/interview', requireAuth);
+app.use('/api/progress', requireAuth);
+app.use('/api/chat', requireAuth);
+
 // Curated default vocabularies in case of instant load
 const DEFAULT_VOCAB = [
   {

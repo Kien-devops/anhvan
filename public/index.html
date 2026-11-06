@@ -14,6 +14,152 @@
 </head>
 <body class="bg-[#f3f6fa] text-[#151515] min-h-screen flex flex-col font-['Plus_Jakarta_Sans'] antialiased selection:bg-[#f4d77c] selection:text-[#151515]">
 
+  <!-- 0. Loading State during Auth Check -->
+  <div id="auth-loading" class="min-h-screen flex flex-col items-center justify-center bg-[#f3f6fa] p-4 text-center">
+    <div class="w-16 h-16 rounded-2xl bg-[#5294ff] border-3 border-[#151515] shadow-[4px_4px_0px_#151515] flex items-center justify-center text-white text-3xl animate-bounce mb-4">
+      <i class="fa-solid fa-cloud-bolt"></i>
+    </div>
+    <h2 class="text-xl font-black text-[#151515]">DevOps Cloud English Hub</h2>
+    <p class="text-xs font-bold text-slate-500 mt-2 flex items-center justify-center gap-2">
+      <i class="fa-solid fa-circle-notch fa-spin text-[#5294ff]"></i> Đang xác thực quyền truy cập Whitelist...
+    </p>
+  </div>
+
+  <!-- 1. Dedicated Login Gate View (Shown when NOT logged in) -->
+  <div id="login-view" class="hidden min-h-screen flex flex-col bg-[#f3f6fa]">
+    <!-- Top Minimal Bar -->
+    <header class="border-b-2 border-[#151515] bg-white sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-[#5294ff] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] flex items-center justify-center text-white text-lg">
+            <i class="fa-solid fa-cloud-bolt"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-black text-lg tracking-tight text-[#151515]">DevOps Cloud English</span>
+              <span class="px-2 py-0.5 text-xs rounded-lg bg-[#f4d77c] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] font-black uppercase">PRO</span>
+            </div>
+            <p class="text-[11px] font-semibold text-slate-600">Luyện tiếng Anh giao tiếp & phỏng vấn Cloud/DevOps với AI</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <div class="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#f4d77c] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] text-[#151515] text-xs font-black">
+            <i class="fa-solid fa-shield-halved text-[#5294ff]"></i>
+            <span>Private Whitelist</span>
+          </div>
+          <a href="https://github.com/Kien-devops/anhvan" target="_blank" class="w-9 h-9 rounded-xl bg-white border-2 border-[#151515] shadow-[2px_2px_0px_#151515] hover:bg-[#f4d77c] flex items-center justify-center text-[#151515] transition" title="View Source on GitHub">
+            <i class="fa-brands fa-github text-lg"></i>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Center Content -->
+    <div class="flex-1 flex flex-col items-center justify-center px-4 py-10 max-w-4xl mx-auto w-full">
+      <!-- Status Badges -->
+      <div class="mb-5 flex flex-wrap items-center justify-center gap-2">
+        <span class="px-3 py-1 bg-white border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-xl text-xs font-black text-[#151515] flex items-center gap-1.5">
+          <i class="fa-solid fa-lock text-amber-500"></i> Cổng Đăng Nhập Bảo Mật
+        </span>
+        <span class="px-3 py-1 bg-[#4ade80] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-xl text-xs font-black text-[#151515] flex items-center gap-1.5">
+          <i class="fa-solid fa-user-check text-[#151515]"></i> Whitelist Authorization
+        </span>
+        <span class="px-3 py-1 bg-[#5294ff] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-xl text-xs font-black text-white flex items-center gap-1.5">
+          <i class="fa-solid fa-server"></i> K3s Homelab
+        </span>
+      </div>
+
+      <!-- Unauthorized Error Banner (Dynamic) -->
+      <div id="login-error-banner" class="hidden mb-6 max-w-lg w-full bg-red-50 border-3 border-red-500 rounded-2xl p-4 shadow-[4px_4px_0px_#151515] text-left space-y-2 animate-in fade-in zoom-in-95">
+        <div class="flex items-center gap-2 text-red-700 font-black text-sm">
+          <i class="fa-solid fa-circle-exclamation text-base"></i>
+          <span>Email Chưa Được Phép Truy Cập!</span>
+        </div>
+        <p class="text-xs text-red-800 font-semibold leading-relaxed">
+          Email <span id="login-error-email" class="font-bold underline font-mono"></span> không nằm trong danh sách Whitelist được phép sử dụng hệ thống.
+        </p>
+        <div class="text-[11px] font-bold text-red-700 bg-white/80 p-2.5 rounded-xl border border-red-200">
+          👉 Vui lòng liên hệ Super Admin: <b>kien07493@gmail.com</b> hoặc <b>24520885@gm.uit.edu.vn</b> để được cấp quyền vào hệ thống.
+        </div>
+      </div>
+
+      <!-- Main Login Box -->
+      <div class="bg-white border-4 border-[#151515] rounded-3xl shadow-[8px_8px_0px_#151515] p-6 sm:p-10 max-w-lg w-full text-center space-y-6">
+        <div class="w-16 h-16 rounded-2xl bg-[#f4d77c] border-3 border-[#151515] shadow-[3px_3px_0px_#151515] mx-auto flex items-center justify-center text-[#151515] text-3xl">
+          <i class="fa-solid fa-shield-cat"></i>
+        </div>
+
+        <div class="space-y-2">
+          <h1 class="text-2xl sm:text-3xl font-black text-[#151515] tracking-tight">
+            Đăng Nhập Để Tiếp Tục
+          </h1>
+          <p class="text-xs sm:text-sm font-semibold text-slate-600 leading-relaxed">
+            Hệ thống yêu cầu xác thực email qua Google. Vui lòng đăng nhập bằng tài khoản đã được phê duyệt trong danh sách Whitelist.
+          </p>
+        </div>
+
+        <!-- Big Google Login Button -->
+        <div class="pt-2">
+          <a href="/auth/google" class="w-full py-4 px-6 bg-white hover:bg-slate-50 text-[#151515] font-black text-sm sm:text-base rounded-2xl border-3 border-[#151515] shadow-[4px_4px_0px_#151515] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0 transition flex items-center justify-center gap-3 cursor-pointer">
+            <svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+            </svg>
+            <span>Tiếp Tục Với Tài Khoản Google</span>
+          </a>
+        </div>
+
+        <!-- Security Note -->
+        <div class="bg-[#fef9c3] border-2 border-[#151515] rounded-xl p-3 text-left text-xs font-medium space-y-1">
+          <div class="font-black text-[#151515] flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check text-[#151515]"></i> Quyền truy cập Whitelist:
+          </div>
+          <p class="text-slate-700 text-[11px] leading-relaxed">
+            Super Admins mặc định: <b>kien07493@gmail.com</b> và <b>24520885@gm.uit.edu.vn</b>. Mỗi tài khoản có kho tiến độ từ vựng và lịch sử phỏng vấn riêng biệt trên cụm K3s.
+          </p>
+        </div>
+      </div>
+
+      <!-- Feature Highlight Badges -->
+      <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl w-full text-left">
+        <div class="bg-white border-2 border-[#151515] rounded-2xl p-4 shadow-[3px_3px_0px_#151515]">
+          <div class="w-8 h-8 rounded-lg bg-[#5294ff] border-2 border-[#151515] text-white flex items-center justify-center text-xs mb-2">
+            <i class="fa-solid fa-book-bookmark"></i>
+          </div>
+          <h4 class="text-xs font-black text-[#151515]">5 Pinned Projects & 5 Certs</h4>
+          <p class="text-[11px] text-slate-600 mt-1">Từ vựng chuyên sâu bám sát kiến trúc EKS, DR Multi-Region, SRE Observability và AWS Certs.</p>
+        </div>
+
+        <div class="bg-white border-2 border-[#151515] rounded-2xl p-4 shadow-[3px_3px_0px_#151515]">
+          <div class="w-8 h-8 rounded-lg bg-[#ff6b6b] border-2 border-[#151515] text-white flex items-center justify-center text-xs mb-2">
+            <i class="fa-solid fa-microphone-lines"></i>
+          </div>
+          <h4 class="text-xs font-black text-[#151515]">Sửa Trực Tiếp Câu Của Bạn</h4>
+          <p class="text-[11px] text-slate-600 mt-1">Giữ nguyên ý tưởng và từ vựng của bạn, trực tiếp chỉnh chuẩn ngữ pháp và cung cấp phát âm mẫu.</p>
+        </div>
+
+        <div class="bg-white border-2 border-[#151515] rounded-2xl p-4 shadow-[3px_3px_0px_#151515]">
+          <div class="w-8 h-8 rounded-lg bg-[#4ade80] border-2 border-[#151515] text-white flex items-center justify-center text-xs mb-2">
+            <i class="fa-solid fa-robot text-[#151515]"></i>
+          </div>
+          <h4 class="text-xs font-black text-[#151515]">DevOps Mentor AI 24/7</h4>
+          <p class="text-[11px] text-slate-600 mt-1">Luyện Standup hằng ngày, giải thích sự cố Kubernetes và trao đổi kỹ thuật tự nhiên.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t-2 border-[#151515] py-4 bg-white text-center text-xs font-bold text-slate-600">
+      DevOps Cloud English Platform &bull; Hosted on On-Premises K3s Cluster &bull; Homelab server-tang4
+    </footer>
+  </div>
+
+  <!-- 2. Main Authenticated Application View (Shown ONLY when Logged In) -->
+  <div id="main-app" class="hidden min-h-screen flex flex-col">
+
   <!-- Top Navigation Bar -->
   <header class="border-b-2 border-[#151515] bg-white sticky top-0 z-50 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -469,6 +615,8 @@
       </div>
     </div>
   </footer>
+
+  </div> <!-- /#main-app -->
 
   <!-- Unauthorized Access Modal (Neo-Brutalism) -->
   <div id="unauth-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
